@@ -1,0 +1,1205 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>:root{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>리보 개발 기획서 v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;700&display=swap">
+<style>
+:root{
+  --paper:#F2F3F0; --surface:#FFFFFF; --surface-2:#E8EAE5; --sunk:#EDEFEA;
+  --line:#D7DAD3; --line-2:#B6BBB2;
+  --ink:#171C19; --ink-2:#3B423C; --ink-3:#636A64;
+  --accent:#1C5F6B; --accent-2:#2E8494; --accent-soft:#DCE9EB;
+  --ok:#3C7048; --ok-soft:#DFEBE0;
+  --warn:#8A6410; --warn-soft:#F2E9D2;
+  --stop:#9E3520; --stop-soft:#F3E0DA;
+  --shadow:0 1px 2px rgba(23,28,25,.05), 0 8px 24px -16px rgba(23,28,25,.25);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1412; --surface:#161C19; --surface-2:#1D2521; --sunk:#131917;
+    --line:#2A332E; --line-2:#3D4842;
+    --ink:#E3E9E5; --ink-2:#A8B1AB; --ink-3:#889189;
+    --accent:#5FB3C2; --accent-2:#7ECBD8; --accent-soft:#102C32;
+    --ok:#79B885; --ok-soft:#16291B;
+    --warn:#D3A63F; --warn-soft:#2C2412;
+    --stop:#DE7A63; --stop-soft:#2F1814;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1412; --surface:#161C19; --surface-2:#1D2521; --sunk:#131917;
+  --line:#2A332E; --line-2:#3D4842;
+  --ink:#E3E9E5; --ink-2:#A8B1AB; --ink-3:#889189;
+  --accent:#5FB3C2; --accent-2:#7ECBD8; --accent-soft:#102C32;
+  --ok:#79B885; --ok-soft:#16291B;
+  --warn:#D3A63F; --warn-soft:#2C2412;
+  --stop:#DE7A63; --stop-soft:#2F1814;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  font-size:16px; line-height:1.78; letter-spacing:-.003em;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Noto Serif KR",serif; text-wrap:balance; margin:0; letter-spacing:-.02em}
+p{margin:0}
+a{color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px}
+:focus-visible{outline:2px solid var(--accent-2); outline-offset:3px; border-radius:2px}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.86em}
+code{background:var(--sunk); border:1px solid var(--line); padding:.08em .38em; border-radius:3px; letter-spacing:0}
+
+/* ---------- shell ---------- */
+.shell{padding-inline:clamp(18px,4vw,56px); padding-block:0 96px; max-width:1320px; margin-inline:auto}
+.layout{display:grid; grid-template-columns:1fr; gap:0}
+@media(min-width:1060px){
+  .layout{grid-template-columns:224px minmax(0,1fr); gap:60px; align-items:start}
+}
+main{min-width:0; max-width:78ch}
+section{scroll-margin-top:24px; padding-block:58px; border-top:1px solid var(--line)}
+section:first-of-type{border-top:none}
+
+/* ---------- masthead ---------- */
+.mast{padding-block:56px 40px}
+.mast-rule{display:flex; align-items:center; gap:14px; margin-bottom:26px}
+.mast-rule .ln{flex:1; height:1px; background:var(--line-2)}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3)}
+h1{font-size:clamp(34px,5.4vw,54px); line-height:1.16; font-weight:700}
+h1 .sub{display:block; font-size:clamp(13px,1.6vw,15px); font-family:"IBM Plex Mono",monospace; font-weight:400; letter-spacing:.12em; color:var(--accent); margin-top:14px}
+.lede{margin-top:24px; font-size:clamp(16.5px,2vw,19px); line-height:1.74; color:var(--ink-2); max-width:62ch}
+.lede strong{color:var(--ink); font-weight:600}
+.mast-meta{display:flex; flex-wrap:wrap; gap:10px 28px; margin-top:30px; padding-top:22px; border-top:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-3); letter-spacing:.04em}
+.mast-meta b{color:var(--ink-2); font-weight:500}
+
+/* ---------- toc ---------- */
+nav.toc{display:none}
+@media(min-width:1060px){
+  nav.toc{display:block; position:sticky; top:20px; padding-top:56px; max-height:100vh; overflow-y:auto; scrollbar-width:thin}
+  nav.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px}
+  nav.toc a{display:grid; grid-template-columns:22px 1fr; gap:6px; padding:6px 8px 6px 0; font-size:13px; line-height:1.4;
+    color:var(--ink-3); text-decoration:none; border-left:2px solid transparent; padding-left:10px; transition:color .15s,border-color .15s}
+  nav.toc a .n{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-3); padding-top:2px}
+  nav.toc a:hover{color:var(--ink)}
+  nav.toc a.on{color:var(--ink); border-left-color:var(--accent); font-weight:500}
+  nav.toc a.on .n{color:var(--accent)}
+  .toc-head{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink-3); padding-left:12px; margin-bottom:12px}
+}
+
+/* ---------- headings ---------- */
+.sec-head{display:flex; gap:16px; align-items:baseline; margin-bottom:8px}
+.sec-num{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--accent); letter-spacing:.08em; padding-top:4px; flex:none}
+h2{font-size:clamp(23px,3vw,30px); font-weight:700; line-height:1.3}
+.sec-sub{color:var(--ink-2); margin:0 0 30px 0; max-width:64ch; font-size:15.5px}
+@media(min-width:640px){.sec-sub{margin-left:44px}}
+.sec-body{display:flex; flex-direction:column; gap:28px}
+@media(min-width:640px){.sec-body{margin-left:44px}}
+h3{font-size:18px; font-weight:700; margin-top:6px}
+h4{font-family:"IBM Plex Sans KR",sans-serif; font-size:13px; font-weight:600; letter-spacing:.02em; color:var(--ink-2)}
+.sec-body > p{max-width:66ch}
+
+/* ---------- primitives ---------- */
+.tag{display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace; font-size:10.5px;
+  letter-spacing:.07em; text-transform:uppercase; padding:3px 8px; border-radius:3px; border:1px solid var(--line-2); color:var(--ink-2); white-space:nowrap}
+.tag.ok{color:var(--ok); border-color:color-mix(in srgb,var(--ok) 40%,transparent); background:var(--ok-soft)}
+.tag.warn{color:var(--warn); border-color:color-mix(in srgb,var(--warn) 40%,transparent); background:var(--warn-soft)}
+.tag.stop{color:var(--stop); border-color:color-mix(in srgb,var(--stop) 40%,transparent); background:var(--stop-soft)}
+.tag.acc{color:var(--accent); border-color:color-mix(in srgb,var(--accent) 40%,transparent); background:var(--accent-soft)}
+
+.note{border-left:2px solid var(--accent); padding:2px 0 2px 18px; color:var(--ink-2); font-size:15px; max-width:66ch}
+.note b{color:var(--ink); font-weight:600}
+.flag{display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:start; padding:16px 18px; border-radius:4px;
+  background:var(--warn-soft); border:1px solid color-mix(in srgb,var(--warn) 30%,transparent); font-size:15px; color:var(--ink-2)}
+.flag.stop{background:var(--stop-soft); border-color:color-mix(in srgb,var(--stop) 30%,transparent)}
+.flag.ok{background:var(--ok-soft); border-color:color-mix(in srgb,var(--ok) 30%,transparent)}
+.flag .mark{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--warn); padding-top:3px; white-space:nowrap}
+.flag.stop .mark{color:var(--stop)}
+.flag.ok .mark{color:var(--ok)}
+.flag b{color:var(--ink)}
+
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:5px; padding:22px 24px; box-shadow:var(--shadow)}
+.panel-t{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin-bottom:14px}
+
+ul.plain{margin:0; padding-left:1.1em; display:flex; flex-direction:column; gap:10px; max-width:66ch}
+ul.plain li{padding-left:.2em}
+ul.plain li::marker{color:var(--ink-3)}
+ol.steps{margin:0; padding:0; list-style:none; counter-reset:s; display:flex; flex-direction:column; gap:16px; max-width:68ch}
+ol.steps li{counter-increment:s; position:relative; padding-left:40px}
+ol.steps li::before{content:counter(s,decimal-leading-zero); position:absolute; left:0; top:0; padding-top:5px;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--accent)}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto; border:1px solid var(--line); border-radius:5px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:14px; min-width:520px}
+th,td{text-align:left; padding:12px 15px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.6}
+thead th{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:400; background:var(--sunk); white-space:nowrap; border-bottom:1px solid var(--line-2)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--sunk)}
+td.num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
+td b{font-weight:600}
+td .sm{display:block; font-size:12px; color:var(--ink-3); margin-top:3px; line-height:1.5}
+.tcap{font-size:13px; color:var(--ink-3); margin-top:10px; max-width:66ch; line-height:1.65}
+
+/* ---------- cards ---------- */
+.grid2{display:grid; grid-template-columns:1fr; gap:14px}
+@media(min-width:700px){.grid2{grid-template-columns:1fr 1fr}}
+.grid3{display:grid; grid-template-columns:1fr; gap:14px}
+@media(min-width:620px){.grid3{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:900px){.grid3{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:5px; padding:18px 20px;
+  display:flex; flex-direction:column; gap:9px}
+.card .k{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+.card .h{font-family:"Noto Serif KR",serif; font-size:16px; font-weight:700; line-height:1.4}
+.card .d{font-size:14px; color:var(--ink-2); line-height:1.66}
+.card.lift{border-color:var(--accent); box-shadow:var(--shadow)}
+.card.lift .k{color:var(--accent)}
+
+/* ---------- flow diagram ---------- */
+.flow{display:flex; flex-direction:column; gap:0; background:var(--sunk); border:1px solid var(--line); border-radius:5px; padding:22px; overflow-x:auto}
+.tier{display:flex; flex-direction:column; gap:10px}
+.tier-l{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+.row{display:flex; flex-wrap:wrap; gap:8px; align-items:stretch}
+.node{background:var(--surface); border:1px solid var(--line-2); border-radius:4px; padding:10px 13px; min-width:118px; flex:1 1 118px}
+.node .nt{font-size:13px; font-weight:600; line-height:1.35}
+.node .nd{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-3); margin-top:4px; line-height:1.45}
+.node.acc{border-color:var(--accent); background:var(--accent-soft)}
+.node.gpu{border-color:var(--warn); background:var(--warn-soft)}
+.node.ghost{border-style:dashed; background:transparent; opacity:.75}
+.down{display:flex; align-items:center; gap:10px; padding:9px 0 9px 2px; color:var(--ink-3)}
+.down .arw{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--accent)}
+.down .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em}
+.boundary{margin:14px 0; padding:9px 12px; border-top:1px dashed var(--line-2); border-bottom:1px dashed var(--line-2);
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em; color:var(--accent); background:var(--accent-soft)}
+
+/* ---------- gate ladder ---------- */
+.gate{display:flex; flex-direction:column; gap:2px}
+.gate-row{display:grid; grid-template-columns:88px 1fr; gap:16px; align-items:start; padding:13px 0; border-bottom:1px solid var(--line)}
+.gate-row:last-child{border-bottom:none}
+.gate-row .thr{font-family:"IBM Plex Mono",monospace; font-size:12.5px; font-variant-numeric:tabular-nums; padding-top:2px}
+.gate-row .act{font-size:14.5px}
+.gate-row .act b{display:block; font-weight:600; margin-bottom:3px}
+.gate-row .act span{color:var(--ink-2); font-size:13.5px}
+.gate-row.g1 .thr{color:var(--ink-3)} .gate-row.g2 .thr{color:var(--warn)} .gate-row.g3 .thr{color:var(--ok)}
+
+/* ---------- latency bar ---------- */
+.lat{display:flex; flex-direction:column; gap:8px}
+.lat-row{display:grid; grid-template-columns:minmax(120px,168px) 1fr minmax(76px,auto); gap:12px; align-items:center; font-size:13.5px}
+.lat-row .nm{color:var(--ink-2)}
+.lat-track{height:18px; background:var(--sunk); border:1px solid var(--line); border-radius:2px; overflow:hidden; position:relative}
+.lat-fill{height:100%; background:var(--accent); opacity:.85}
+.lat-fill.w{background:var(--warn)} .lat-fill.n{background:var(--line-2)}
+.lat-row .v{font-family:"IBM Plex Mono",monospace; font-size:12px; font-variant-numeric:tabular-nums; text-align:right; color:var(--ink-2)}
+.lat-total{display:grid; grid-template-columns:minmax(120px,168px) 1fr minmax(76px,auto); gap:12px; align-items:center;
+  padding-top:10px; margin-top:4px; border-top:1px solid var(--line-2); font-size:13.5px; font-weight:600}
+.lat-total .v{font-family:"IBM Plex Mono",monospace; text-align:right; font-variant-numeric:tabular-nums}
+
+/* ---------- controls ---------- */
+.ctl-bar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px}
+button.chip{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+  padding:6px 12px; border-radius:3px; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2); cursor:pointer;
+  transition:all .15s}
+button.chip:hover{border-color:var(--accent); color:var(--accent)}
+button.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--paper)}
+tr.hide{display:none}
+
+.calc{display:grid; grid-template-columns:1fr; gap:22px}
+@media(min-width:760px){.calc{grid-template-columns:minmax(0,1fr) minmax(0,300px)}}
+.slider{display:flex; flex-direction:column; gap:7px; margin-bottom:20px}
+.slider .sl{display:flex; justify-content:space-between; align-items:baseline; font-size:13.5px}
+.slider .sl .v{font-family:"IBM Plex Mono",monospace; font-size:15px; font-variant-numeric:tabular-nums; color:var(--accent); font-weight:500}
+input[type=range]{width:100%; accent-color:var(--accent); height:22px}
+.readout{display:flex; flex-direction:column; gap:0; background:var(--sunk); border:1px solid var(--line); border-radius:4px; padding:4px 16px}
+.ro{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); font-size:13.5px}
+.ro:last-child{border-bottom:none}
+.ro .k{color:var(--ink-2)}
+.ro .v{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:14px; font-weight:500}
+.ro.hi .v{color:var(--accent); font-size:17px}
+
+/* ---------- sources ---------- */
+.src{display:flex; flex-direction:column; gap:0; font-size:13.5px}
+.src-row{display:grid; grid-template-columns:1fr; gap:2px; padding:11px 0; border-bottom:1px solid var(--line)}
+@media(min-width:640px){.src-row{grid-template-columns:190px 1fr; gap:16px}}
+.src-row:last-child{border-bottom:none}
+.src-row .t{color:var(--ink-2); font-size:13px}
+.src-row a{word-break:break-all; font-family:"IBM Plex Mono",monospace; font-size:11.5px}
+
+footer{margin-top:64px; padding-top:26px; border-top:1px solid var(--line-2); display:flex; flex-wrap:wrap; gap:12px 30px;
+  justify-content:space-between; align-items:baseline; font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3); letter-spacing:.05em}
+@media(prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+
+<div class="shell">
+<header class="mast">
+  <div class="mast-rule"><span class="eyebrow">리보 · LIVO</span><span class="ln"></span><span class="eyebrow">v4 · 2026-09-15</span></div>
+  <h1>무성 발화 복원 서비스 개발 기획서
+    <span class="sub">LICENSE · USER FLOW · ARCHITECTURE · PRICING</span></h1>
+  <p class="lede">소리를 내지 못하는 사람이 입모양만 만들면, <strong>그 사람에게 가장 가까운 목소리로</strong> 대신 말한다. 이 문서는 2026-08-06 확정 기획안을 <strong>상시 GPU 없이 Vercel + Supabase + ElevenLabs로</strong> 굴리는 구조로 갱신하고, 상업화에 필요한 라이선스·법규·원가·결제 모델을 한 장에 모은 것이다. v4는 v3 검토 결과를 반영해 <strong>고정 문장 트랙과 자유 문장 트랙</strong>을 나누고, 자유 문장을 위한 데이터 전략을 더했다.</p>
+  <div class="mast-meta">
+    <span><b>대상</b> ALS · 뇌졸중 · 후두암 등 발성 상실</span>
+    <span><b>범위</b> 고정 15문장 + 자유 문장</span>
+    <span><b>스택</b> Vercel · Supabase · ElevenLabs</span>
+    <span><b>인증</b> Google OAuth 단독</span>
+    <span><b>팀</b> 안지현 · 송의현 · 차준호 · 최한울</span>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="목차">
+  <div class="toc-head">Contents</div>
+  <ol id="toc"></ol>
+</nav>
+
+<main>
+
+<section id="s1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>이번 개정에서 확정된 네 가지</h2></div>
+  <p class="sec-sub">2026-08-06 확정 기획안 대비 바뀐 것만 먼저 적는다. 나머지 절은 이 네 결정을 전제로 쓰였다.</p>
+  <div class="sec-body">
+
+    <div class="grid2">
+      <div class="card lift">
+        <span class="k">변경 01 · 트리거</span>
+        <span class="h">무조작 단일 → 이중 모드</span>
+        <span class="d">기본은 그대로 <b>무조작 자동 감지</b>. 손을 쓸 수 있는 사용자(초기 ALS, 후두암 수술 직후, 일시적 발성 상실)를 위해 <b>수동 ON/OFF 세션</b>을 옵션으로 추가한다. 절대 제약은 유지된다 — 수동 모드는 선택지이지 전제가 아니다.</span>
+      </div>
+      <div class="card lift">
+        <span class="k">변경 02 · 스택</span>
+        <span class="h">상주 GPU → 상시 GPU 없이 관리형 API</span>
+        <span class="d">웹·API·인증·DB·스토리지는 Vercel + Supabase. <b>상시 돌아가는 GPU는 두지 않는다</b> — TTS와 음성 클로닝은 관리형 API(<b>ElevenLabs</b>)로 분리한다. 고정 문장은 미리 합성해 두므로 초기 원가는 낮다(§12). 고정 문장 트랙에는 GPU가 전혀 필요 없고, GPU가 필요해질 수 있는 것은 <b>자유 문장 트랙</b>뿐이다(§9 · §15).</span>
+      </div>
+      <div class="card lift">
+        <span class="k">변경 03 · 범위</span>
+        <span class="h">고정 문장 + 자유 문장, 두 트랙</span>
+        <span class="d">고정 문장 트랙(응급·일상, 자동 발화)으로 출시하고, 자유 문장 트랙은 <b>필수 목표</b>로 두어 Stage 1부터 데이터 수집을 시작한다. 자유 문장은 받아쓰기가 아니라 <b>후보 제시 + 대화 맥락 + 확인 후 발화</b>로 정의한다(§14). 응급 발화는 자유 문장 경로에 태우지 않는다.</span>
+      </div>
+      <div class="card lift">
+        <span class="k">변경 04 · 발화 경로</span>
+        <span class="h">서버 분류 → 단말 처리 + 사전 합성</span>
+        <span class="d">고정 문장은 인식·판정·재생을 <b>전부 단말에서</b> 한다. 음성은 voice 등록·문장 추가 시점에 미리 합성해 단말에 내려둔다. 발화 순간 네트워크 왕복이 0회가 되어 콜드스타트가 응급 경로에서 사라지고, 오프라인에서도 등록 문장 전부가 나간다(§5).</span>
+      </div>
+    </div>
+
+    <div class="flag">
+      <span class="mark">유지되는 절대 제약</span>
+      <div><b>사용자는 손을 쓰지 않아도 쓸 수 있어야 한다.</b> ALS는 진행되면 손을 못 쓰고 뇌졸중은 편마비가 흔하다. 버튼을 <em>필수</em>로 만드는 순간 대상자의 상당수가 배제된다. 수동 모드를 추가하되, 수동 모드 없이도 온보딩부터 일상 사용까지 전 경로가 완결되어야 한다. 이 조건을 깨는 기능은 어떤 이유로도 머지하지 않는다.</div>
+    </div>
+
+    <div class="flag ok">
+      <span class="mark">이번 스택 결정의 요지</span>
+      <div><b>상시 돌아가는 GPU를 우리가 운영하지 않는다.</b> ElevenLabs로 시작하면 GPU 없이 클로닝까지 된다. 고정 문장 트랙은 GPU 없이 끝난다 — DTW는 학습이 없고 소형 CNN은 CPU로 학습된다. GPU가 필요할 수 있는 곳은 자유 문장 트랙 두 군데뿐이다 — ① 공용 인코더 학습(AI Hub 1,150시간 규모 · 작업 단위 · 국내), ② 자유 문장 인식 추론(단말 WebGPU 또는 서버리스 GPU). 둘 다 입력이 좌표면 가벼워지고, 입 영역 영상이면 GPU가 사실상 필수다(§15.3). 고정 문장 사전 합성은 배치 작업이라 콜드스타트가 문제되지 않으므로, 자체 호스팅 TTS는 v3 판단보다 이른 시점의 원가 최적화 옵션이다(§6.2 · §12.1).</div>
+    </div>
+
+  </div>
+</section>
+
+<section id="s2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>제품 정의와 경계</h2></div>
+  <p class="sec-sub">무엇을 하는 물건인지, 그리고 결정적으로 — 무엇을 하지 <em>않는</em> 물건인지. 뒤쪽이 의료기기 규제와 직결된다.</p>
+  <div class="sec-body">
+
+    <h3>하는 것</h3>
+    <ul class="plain">
+      <li>카메라 앞에서 소리 없이 입모양을 만들면, 등록된 문장 중 하나로 인식해 <b>텍스트로 화면에 띄우고 음성으로 출력</b>한다.</li>
+      <li>출력 목소리는 기본 프리셋 · 동성 가족 · 본인 옛 음성 중 선택하며, <b>언제든 교체 가능한 프로필</b>이다. 클로닝은 첫 출시부터 제공한다.</li>
+      <li>얼굴 영상은 단말을 벗어나지 않는다. 고정 문장 발화 때는 <b>아무 데이터도 단말 밖으로 나가지 않고</b>(발화 로그 텍스트만 나중에 동기화), 자유 문장 발화 때 서버로 가는 것은 발화 구간의 입 영역 데이터뿐이다. 그 형태(좌표 또는 입 영역 특징)는 §15.3 실험으로 정한다.</li>
+    </ul>
+
+    <h3>하지 않는 것 — 규제 경계</h3>
+    <div class="tw"><table>
+      <thead><tr><th>하지 않음</th><th>이유</th><th>결과</th></tr></thead>
+      <tbody>
+        <tr><td><b>진단 · 치료 · 예후 판정</b></td><td>디지털의료제품법상 의료기기 정의의 핵심은 “질병을 예방·관리 또는 치료하기 위한 목적”이다</td><td>사용 목적을 <b>“보완대체 의사소통(AAC)”</b>으로 고정. 마케팅 문구에서 “치료·개선·호전” 금지</td></tr>
+        <tr><td><b>임상적 효과 표방</b></td><td>효능 표방은 의료기기 광고 규제 대상</td><td>“의사소통 보조”, “발화 대체”로만 기술</td></tr>
+        <tr><td><b>임의 텍스트 입력</b></td><td>합성 가능한 텍스트는 등록 문장, 또는 <b>입모양에서 인식되어 대상자가 확인한</b> 문장뿐</td><td>보이스피싱 악용이 <b>기능이 아니라 구조로</b> 차단됨(§14)</td></tr>
+        <tr><td><b>얼굴 영상 서버 저장</b></td><td>생체정보 원본 보관은 파기 의무·유출 리스크를 동시에 짊어진다</td><td>“개인정보 부담이 낮다”가 정책이 아니라 아키텍처가 됨. <b>예외:</b> 연구 참여에 별도 동의한 사람의 입 영역 크롭 영상은 데이터 수집 트랙에 한해 저장(§15)</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">AAC 소프트웨어가 의료기기가 아니라고 명시한 식약처 공식 유권해석·사례는 이번 조사에서 확인하지 못했다. 위 경계는 정의 조문 해석에 근거한 설계 방침이며, <b>출시 전 식약처 사전 상담 또는 비의료기기 확인 신청이 필요</b>하다(§11).</p>
+
+    <h3>대상 환자군과 규모</h3>
+    <div class="grid3">
+      <div class="card"><span class="k">가장 큰 유입</span><span class="h">뇌졸중</span><span class="d">연 63만 명 규모. <b>갑자기 온다 → 사전 녹음이 거의 없다.</b> 목소리를 필수 입력으로 받으면 이 군이 온보딩에서 통째로 막힌다. §6의 “목소리는 관문이 아니다” 원칙이 여기서 나온다.</span></div>
+      <div class="card"><span class="k">가장 절실한 유입</span><span class="h">ALS · 운동신경질환</span><span class="d">최대 95%가 발성을 잃는다. 진행성이므로 <b>보이스뱅킹 수요</b>가 명확하고, 동시에 손 기능도 잃으므로 무조작 트리거가 필수인 군이다.</span></div>
+      <div class="card"><span class="k">가장 빠른 검증</span><span class="h">후두 절제 · 기관절개</span><span class="d">인지·운동 기능은 유지된 채 발성만 잃는다. <b>입모양은 정상</b>이므로 인식 정확도 검증에 가장 적합한 초기 파일럿 집단.</span></div>
+    </div>
+    <p class="tcap">환자군 규모 수치는 기존 신청서에 기재된 값을 그대로 옮긴 것이며 이 문서에서 별도로 재확인하지 않았다.</p>
+
+    <h3>선행 사례 — Liopa SRAVI</h3>
+    <div class="flag">
+      <span class="mark">같은 컨셉 · 청산</span>
+      <div>영국 Liopa(퀸스대 벨파스트 스핀오프)의 <b>SRAVI</b>는 리보와 거의 같은 컨셉이다 — 고정 문구 립리딩, 기관절개 환자 대상, NHS 임상에서 90% 이상 정확도 보고, 미국 임상까지 진행. 그러나 회사는 <b>2024-04 자발적 청산</b>에 들어갔다. 기술 검증이 곧 사업 검증은 아니라는 사례다. 병원 판매 사이클 · 지불 주체 · 임상 도입 장벽 중 어디서 막혔는지 조사해 §12 결제 모델에 반영한다(§16 W20).</div>
+    </div>
+
+  </div>
+</section>
+
+<section id="s3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>사용자 흐름</h2></div>
+  <p class="sec-sub">로그인 → 캘리브레이션 → 일상 사용. 각 단계에서 손을 몇 번 써야 하는지를 함께 적는다.</p>
+  <div class="sec-body">
+
+    <h3>3.1 계정 구조 — 누가 로그인하는가</h3>
+    <div class="flag">
+      <span class="mark">설계 함정</span>
+      <div><b>손을 못 쓰는 사람은 구글 로그인을 스스로 할 수 없다.</b> 인증 흐름을 환자 본인에게 맡기면 절대 제약이 온보딩 단계에서 곧바로 깨진다. 따라서 <b>계정 소유자와 서비스 대상자를 분리</b>한다.</div>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>역할</th><th>실체</th><th>권한</th></tr></thead>
+      <tbody>
+        <tr><td><b>계정(account)</b></td><td>보호자 · 간병인 · 또는 본인. Google OAuth로 인증되는 단위<span class="sm">Supabase <code>auth.users</code></span></td><td>결제, 프로필 관리, 동의 제출, 문장 편집</td></tr>
+        <tr><td><b>대상자 프로필(subject)</b></td><td>실제로 말하는 사람. 계정 1개에 프로필 N개(요양기관 대비)<span class="sm">자체 테이블 <code>subjects</code></span></td><td>캘리브레이션 데이터, 음성 프로필, 발화 로그의 귀속 단위</td></tr>
+        <tr><td><b>런타임 세션</b></td><td>병상 옆 태블릿에 <b>영구 로그인 상태로 고정</b><span class="sm">키오스크 모드(Android 화면 고정 · iOS 사용법 유도 모드)와 거치대 전제</span></td><td>재로그인 없이 곧바로 발화. 세션 갱신은 백그라운드에서 자동. 고정 문장은 네트워크 없이도 발화</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">구글 로그인 단독으로 가는 이유 — 비밀번호 재입력이 없고, 고령 보호자도 이미 안드로이드 기기에서 로그인되어 있을 확률이 높다. 리스크는 구글 계정이 없는 보호자이며, Stage 2에서 카카오 로그인 추가를 검토한다(국내 고령층 커버리지).</p>
+
+    <h3>3.2 온보딩 — 최초 1회</h3>
+    <ol class="steps">
+      <li><b>구글 로그인</b> — Supabase Auth. 손 사용 1회(보호자).</li>
+      <li><b>동의 수집</b> — 생체정보 처리 별도 동의, 음성 사용 동의, <b>음성 국외이전</b>(참조 음성이 해외 API로 전송됨 · §11.2), 대상자가 의사표현 불가한 경우 법정대리인 동의. 동의 주체가 계층마다 다르다(§11.4). 손 사용 수 회(보호자).</li>
+      <li><b>카메라 권한 + 조명 체크</b> — 얼굴 인식 성공 여부를 실시간 피드백으로 보여준다. 여기서 각도·거치 위치가 결정되고, 이후 정확도의 상당 부분이 여기서 갈린다. 거치 기본값은 <b>얼굴보다 낮게, 올려다보는 각도</b>다 — OLKAVS 립리딩 기준선에서 아래 시점 CER은 31~33%로 정면(약 32%)과 비슷하고, 위 시점은 41~46%로 크게 나빠진다. 누운 자세에서는 파일럿에서 다시 확인한다.</li>
+      <li><b>캘리브레이션 녹화</b> — 화면이 문장을 하나씩 띄우고 대상자가 소리 없이 따라 한다. <b>손 사용 0회</b>: 다음 문장으로의 진행은 발화 구간 검출로 자동 전환된다.</li>
+      <li><b>목소리 선택</b> — 성별·연령대 프리셋으로 즉시 시작. 가족 음성이나 본인 옛 음성은 나중에 올려도 된다(§6).</li>
+      <li><b>첫 발화 테스트</b> — 대상자가 아무 등록 문장이나 말해보고, 나온 소리를 함께 듣는다. 이 순간이 온보딩 완료 지점이다.</li>
+    </ol>
+
+    <h3>3.3 캘리브레이션의 부담 — 정면으로 계산</h3>
+    <p>15문장 × N회 반복이 곧 온보딩 이탈률이다. 환자는 지치고, 보호자는 시간이 없다.</p>
+    <div class="tw"><table>
+      <thead><tr><th>설정</th><th class="num">문장당 반복</th><th class="num">총 녹화</th><th class="num">예상 소요</th><th>판단</th></tr></thead>
+      <tbody>
+        <tr><td>이상적 학습량</td><td class="num">20회</td><td class="num">300건</td><td class="num">약 50분</td><td><span class="tag stop">이탈</span> 1회 세션으로 불가능</td></tr>
+        <tr><td>표준 제안</td><td class="num">8회</td><td class="num">120건</td><td class="num">약 18분</td><td><span class="tag warn">분할</span> Tier 0 먼저(4문장·5분), 나머지는 이후 세션</td></tr>
+        <tr><td>최소 기동</td><td class="num">3회</td><td class="num">12건 (Tier 0만)</td><td class="num">약 4분</td><td><span class="tag ok">채택</span> 응급 4문장만으로 <b>첫날 사용 시작</b></td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">핵심 결정 — 15문장을 다 채워야 쓸 수 있는 제품이 아니라, <b>Tier 0 응급 4문장만 학습해도 그날부터 동작하고 문장이 점진적으로 늘어나는</b> 제품으로 만든다. 등록된 문장 수만큼만 인식 대상에 넣으면 되므로(템플릿 등록 또는 클래스 활성화 · §4.3), 문장 수가 적을수록 초기 정확도는 오히려 높다.</p>
+
+    <h3>3.4 일상 사용</h3>
+    <div class="flow">
+      <div class="tier">
+        <span class="tier-l">대기 상태 — 화면에 아무것도 없다</span>
+        <div class="row">
+          <div class="node"><div class="nt">카메라 켜짐</div><div class="nd">30 fps · Wake Lock · 검은 화면</div></div>
+          <div class="node"><div class="nt">입 개폐량 감시</div><div class="nd">랜드마크 2점 거리</div></div>
+        </div>
+      </div>
+      <div class="down"><span class="arw">↓</span><span class="lbl">입이 움직이기 시작</span></div>
+      <div class="tier">
+        <span class="tier-l">발화 후보 구간</span>
+        <div class="row">
+          <div class="node acc"><div class="nt">구간 캡처</div><div class="nd">움직임 시작 ~ 0.5초 정지</div></div>
+          <div class="node acc"><div class="nt">단말에서 인식 · 판정</div><div class="nd">네트워크 사용 없음</div></div>
+        </div>
+      </div>
+      <div class="down"><span class="arw">↓</span><span class="lbl">인식 · 게이트 통과 시에만</span></div>
+      <div class="tier">
+        <span class="tier-l">출력 — 텍스트와 소리를 동시에</span>
+        <div class="row">
+          <div class="node"><div class="nt">문장 크게 표시</div><div class="nd">상대가 즉시 확인</div></div>
+          <div class="node"><div class="nt">합성 음성 재생</div><div class="nd">단말에 미리 받아둔 오디오</div></div>
+        </div>
+      </div>
+    </div>
+    <p class="tcap">텍스트를 함께, 그리고 <b>크게</b> 띄우는 것은 UI 취향이 아니라 안전장치다. “아파요”가 “고마워요”로 나가는 사고를 막는 유일한 수단이 옆 사람의 눈이기 때문이다. 대기 중에도 화면은 켜둔다 — 브라우저는 화면이 꺼지거나 백그라운드로 가면 카메라 트랙을 멈추므로, Screen Wake Lock으로 화면을 유지하고 검은 화면으로 전력을 줄인다.</p>
+
+  </div>
+</section>
+
+<section id="s4">
+  <div class="sec-head"><span class="sec-num">04</span><h2>트리거 — 이중 모드 설계</h2></div>
+  <p class="sec-sub">“언제부터 입모양을 인식할 것인가”에 대한 답. 기본은 아무것도 누르지 않는 쪽이다.</p>
+  <div class="sec-body">
+
+    <h3>4.1 모드 A · 무조작 자동 (기본값)</h3>
+    <p>별도의 트리거 장치를 만들지 않는다. 대신 <b>인식기 자신이 “이건 말이 아니다”를 판단하게</b> 한다.</p>
+    <div class="note"><b>“말이 아님”을 거르는 방법.</b> 15문장만 아는 인식기는 씹는 동작을 줘도 “화장실”이라고 답한다 — 반드시 하나를 골라야 하기 때문이다. 막는 방법은 인식 방식(§4.3)에 따라 다르다. <b>소형 CNN</b>이면 씹기·하품·기침·웃기·무성 잡담을 <code>NONE</code> 클래스로 학습시킨다(16클래스). <b>DTW 템플릿</b>이면 가장 가까운 템플릿과의 거리가 임계값보다 멀 때 거절한다(NONE 데이터 불필요). 어느 쪽이든 트리거 장치는 필요 없다.</div>
+
+    <h4>판정 게이트 · 4단</h4>
+    <div class="panel"><div class="gate">
+      <div class="gate-row g1"><span class="thr">NONE</span><span class="act"><b>조용히 폐기</b><span>NONE 클래스 또는 템플릿 거리 초과. 아무 일도 일어나지 않는다. 로그에도 남기지 않는다.</span></span></div>
+      <div class="gate-row g1"><span class="thr">&lt; 0.70</span><span class="act"><b>조용히 폐기</b><span>저확신. 사용자는 자기가 뭘 잘못했는지 알 필요가 없다.</span></span></div>
+      <div class="gate-row g2"><span class="thr">0.70 – 0.90</span><span class="act"><b>화면에 문장만 표시 · 소리 없음</b><span>반복하면 확정된다. 이것이 손을 쓰지 않는 취소 수단이다 — 알아듣지 못하면 다시 말하는 건 원래 하던 행동이라 배울 게 없다.</span></span></div>
+      <div class="gate-row g3"><span class="thr">≥ 0.90</span><span class="act"><b>즉시 합성 · 발화</b><span>문장 텍스트를 캐시 또는 TTS API로 넘긴다.</span></span></div>
+    </div></div>
+    <div class="note">임계값을 보수적으로 잡는 이유는 두 오류의 비용이 비대칭이기 때문이다. <b>“말했는데 안 나옴”은 다시 말하면 되지만, “말 안 했는데 나옴”은 사고다.</b> 그래서 검증 게이트에 <b>자연 상태 10분 오발화 0회</b>를 정확도와 나란히 놓는다.</div>
+    <p class="tcap">0.70 / 0.90은 출발값이다. 점수는 CNN이면 확신도, DTW면 템플릿 거리에서 환산한 값이다. 소량 데이터로 학습한 CNN의 softmax 확신도는 처음 보는 입력에도 높게 나오는 경향이 있어 그대로 믿지 않는다 — 임계값은 <b>자연 상태 오발화 실측으로 보정</b>한다.</p>
+
+    <h3>4.2 모드 B · 수동 세션 (옵션)</h3>
+    <div class="tw"><table>
+      <thead><tr><th>항목</th><th>모드 A · 무조작</th><th>모드 B · 수동 세션</th></tr></thead>
+      <tbody>
+        <tr><td>시작</td><td>입이 움직이면 자동</td><td>ON 토글 · 이후 세션 동안만 인식</td></tr>
+        <tr><td>대상</td><td><b>전 사용자 (기본값)</b></td><td>손 사용 가능한 사용자</td></tr>
+        <tr><td>발화 임계값</td><td>0.90</td><td><b>0.80으로 완화</b> — 의도가 이미 표명되었으므로</td></tr>
+        <tr><td>NONE · 거리 거절</td><td>필수</td><td>유지 (씹기·기침은 세션 중에도 일어난다)</td></tr>
+        <tr><td>전력 · 프라이버시</td><td>카메라 상시 · 개폐량만 계산</td><td><b>OFF 시 카메라 트랙 자체를 정지</b></td></tr>
+        <tr><td>부수 효과</td><td>—</td><td>면회·진료 중 “지금은 말하지 않겠다”를 명시할 수단이 생긴다</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">모드 B의 토글은 화면 버튼 외에 <b>외부 스위치(BLE 버튼, 발 스위치, 시선 고정 2초)</b>로도 매핑 가능하게 설계한다. 잔존 기능이 어디에 남아 있든 하나는 걸리게 하는 것이 목적이다.</p>
+
+    <h3>4.3 인식 방식 — 파일럿에서 비교한다</h3>
+    <p>고정 문장 인식기는 두 후보를 같은 파일럿 데이터로 비교해 정한다. 둘 다 단말에서 돈다(§5).</p>
+    <div class="tw"><table>
+      <thead><tr><th>후보</th><th>방식</th><th>장점</th><th>약점</th></tr></thead>
+      <tbody>
+        <tr><td><b>DTW 템플릿 매칭</b><span class="sm">k-NN</span></td><td>등록 샘플을 템플릿으로 저장하고, 입력과의 DTW 거리로 가장 가까운 문장을 고른다</td><td>학습 과정 없음 · 문장 추가 즉시 반영 · 거리 기반 거절이라 NONE 데이터 불필요 · 학습 인프라 불필요</td><td>템플릿 수에 비례해 연산 증가 · 자세·말 속도 변화에 민감할 수 있음</td></tr>
+        <tr><td><b>소형 1D-CNN</b><span class="sm">사용자별 · ONNX Runtime Web</span></td><td>등록 샘플로 K+1 클래스 분류기를 학습한다</td><td>샘플이 충분하면 변동에 강함 · 공용 인코더(§15) 위에 얹기 쉬움</td><td>문장당 3회(Tier 0 12건)로는 처음부터 학습이 어려움 · 사용자별 NONE 데이터 수집 경로 필요 · 학습 인프라 필요 · 확신도 보정 필요</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">비교 기준 — ① 등록 문장 정확도 ② 자연 상태 10분 오발화 ③ 문장당 필요 샘플 수 ④ 문장 추가 후 사용 가능까지 걸리는 시간 ⑤ 저가 태블릿에서의 연산 시간(§16 W12). 공용 인코더가 생기면 두 방식 모두 그 임베딩 위에서 동작하도록 수렴시킬 수 있다.</p>
+
+  </div>
+</section>
+
+<section id="s5">
+  <div class="sec-head"><span class="sec-num">05</span><h2>시스템 아키텍처 — Vercel + Supabase + ElevenLabs</h2></div>
+  <p class="sec-sub">“계속 입모양을 인식해야 하는데 서버리스로 되나? GPU 없이 TTS가 되나?” — v4의 답은 <b>고정 문장 발화 경로에서 서버를 아예 빼는 것</b>이다. 서버는 계정·동의·voice 등록·사전 합성·동기화, 그리고 자유 문장 트랙을 맡는다.</p>
+  <div class="sec-body">
+
+    <div class="flag">
+      <span class="mark">핵심 답</span>
+      <div><b>고정 문장은 인식 루프도, 판정도, 재생도 단말에서 끝낸다.</b> 30fps로 흘러드는 프레임을 지켜보는 일은 원래 서버리스가 할 수 없고, 잘려 나온 구간을 인식하는 일도 DTW나 소형 CNN이라 WASM에서 수 ms면 된다. 합성은 발화 순간이 아니라 <b>voice 등록·문장 추가 시점에 미리</b> 해서 단말에 내려둔다. 그래서 발화 순간 네트워크 왕복이 없고, 서버리스 콜드스타트나 네트워크 장애가 응급 경로에 끼지 않는다. 서버를 거치는 발화는 <b>자유 문장 트랙뿐</b>이며, 거기에는 대상자 확인 단계가 있어 지연을 감당할 수 있다(§5.4).</div>
+    </div>
+
+    <h3>5.1 3층 구조</h3>
+    <div class="flow">
+      <div class="tier">
+        <span class="tier-l">① 브라우저 (PWA) — 고정 문장 발화의 전부</span>
+        <div class="row">
+          <div class="node"><div class="nt">카메라</div><div class="nd">getUserMedia · 30fps · Wake Lock</div></div>
+          <div class="node"><div class="nt">입술 좌표 추출</div><div class="nd">MediaPipe Tasks · WASM</div></div>
+          <div class="node"><div class="nt">구간 검출</div><div class="nd">개폐량 · 0.5s 정지</div></div>
+          <div class="node acc"><div class="nt">정규화 + 인식</div><div class="nd">DTW 또는 소형 CNN · §4.3</div></div>
+          <div class="node acc"><div class="nt">판정 게이트</div><div class="nd">4단 · 단말</div></div>
+          <div class="node acc"><div class="nt">재생 + 문장 표시</div><div class="nd">미리 받아둔 오디오</div></div>
+        </div>
+      </div>
+      <div class="boundary">고정 문장 발화 순간에는 경계를 넘는 것이 없다 — 발화 로그만 나중에 동기화. 얼굴 영상은 어떤 경우에도 단말을 벗어나지 않는다</div>
+      <div class="down"><span class="arw">↓</span><span class="lbl">로그 동기화 · voice 등록 · 자유 문장 요청</span></div>
+      <div class="tier">
+        <span class="tier-l">② Vercel Functions (Node Runtime · icn1 서울) — 상태 없음</span>
+        <div class="row">
+          <div class="node"><div class="nt">동기화</div><div class="nd">발화 로그 · 인식기 백업</div></div>
+          <div class="node"><div class="nt">voice 등록</div><div class="nd">전처리 → ElevenLabs</div></div>
+          <div class="node"><div class="nt">사전 합성</div><div class="nd">(문장 × voice) 배치</div></div>
+          <div class="node acc"><div class="nt">자유 문장 오케스트레이션</div><div class="nd">후보 생성 → 확인 → 합성</div></div>
+        </div>
+      </div>
+      <div class="down"><span class="arw">↓</span><span class="lbl">사전 합성 · 자유 문장 실시간 합성 · 인식 추론</span></div>
+      <div class="tier">
+        <span class="tier-l">③ 상태 저장소와 외부 연산</span>
+        <div class="row">
+          <div class="node"><div class="nt">Supabase Postgres</div><div class="nd">사용자 · 문장 · 동의 · 결제</div></div>
+          <div class="node"><div class="nt">Supabase Storage</div><div class="nd">참조 음성 · 합성 오디오 · 비공개</div></div>
+          <div class="node gpu"><div class="nt">ElevenLabs API · TTS+클로닝</div><div class="nd">GPU는 제공자 몫 → 우리는 호출만</div></div>
+          <div class="node gpu ghost"><div class="nt">자유 문장 인식 추론</div><div class="nd">단말 WebGPU 또는 서버리스 GPU · 미정</div></div>
+        </div>
+      </div>
+    </div>
+
+    <h3>5.2 각 조각이 왜 거기에 있는가</h3>
+    <div class="tw"><table>
+      <thead><tr><th>결정</th><th>근거</th></tr></thead>
+      <tbody>
+        <tr><td><b>구간 검출은 브라우저</b></td><td>입이 멈춰 있는 대부분의 시간 동안 좌표를 서버로 보낼 이유가 없다. 대역폭·원가·프라이버시 모두 여기서 결정된다.</td></tr>
+        <tr><td><b>인식·정규화도 단말</b></td><td>DTW든 소형 CNN이든 WASM에서 수 ms로 끝나는 연산이라 서버로 보낼 이유가 없다. 학습(Python)과 추론(JS)의 정규화 불일치로 정확도가 <b>조용히</b> 무너지는 위험은 구현 위치가 아니라 방법으로 막는다 — CNN이면 정규화를 ONNX 그래프 안에 넣거나 골든 픽스처로 동등성 테스트한다. DTW는 학습이 없어 이 문제가 생기지 않는다.</td></tr>
+        <tr><td><b>판정 게이트도 단말</b></td><td>고정 문장 트랙에서 재생할 수 있는 것은 등록 문장의 미리 합성된 오디오뿐이다. 클라이언트를 조작해도 등록 문장 재생 외에 할 수 있는 일이 없고, 임계값은 어차피 우리가 배포하는 코드에 들어 있다. <b>서버 권위가 필요한 곳은 임의 텍스트 합성이 생기는 자유 문장 트랙</b>이다(§14).</td></tr>
+        <tr><td><b>합성은 미리, 관리형 API로</b></td><td>GPU를 직접 운영하지 않기 위해 ElevenLabs를 쓴다. 고정 문장은 발화 시점이 아니라 voice 등록·문장 추가 시점에 (문장 × voice)를 전부 합성해 단말에 내려두므로, 발화 경로에 API 호출이 없다(§12). 실시간 합성은 자유 문장 트랙에서만 일어난다.</td></tr>
+        <tr><td><b>Node Runtime, Edge 아님</b></td><td>Edge Runtime은 응답 시작을 25초 내로 요구하고 Node API가 제한된다. TTS API 호출 대기와 오디오 스트리밍은 Node Runtime + Fluid Compute 쪽이 맞는다.</td></tr>
+        <tr><td><b>Fluid Compute</b></td><td>I/O 대기(= 외부 TTS API 응답 대기) 중에는 Active CPU 과금이 멈춘다. TTS 호출을 기다리는 이 서비스의 패턴과 정확히 맞물린다.</td></tr>
+        <tr><td><b>WebSocket을 쓰지 않음</b></td><td>Vercel WebSocket은 Public Beta이고 연결이 단일 인스턴스에 고정되며 브로드캐스트가 안 된다. 요청당 단발 HTTP면 충분하므로 지속 연결 자체가 불필요하다.</td></tr>
+        <tr><td><b>화면은 켜둔다</b></td><td>브라우저·PWA는 화면이 꺼지거나 백그라운드로 가면 카메라 트랙이 멈춘다. Screen Wake Lock으로 화면을 유지하고 검은 화면으로 전력을 줄인다. 화면이 꺼진 상태의 인식이 꼭 필요해지면 네이티브 앱(안드로이드 포그라운드 서비스)이 유일한 경로다.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>5.3 지연 예산</h3>
+    <div class="panel">
+      <div class="panel-t">발화 1건 · 입이 멈춘 순간부터 소리가 나기까지 (고정 문장 트랙 · 추정)</div>
+      <div class="lat">
+        <div class="lat-row"><span class="nm">구간 종료 대기</span><div class="lat-track"><div class="lat-fill w" style="width:83%"></div></div><span class="v">500 ms</span></div>
+        <div class="lat-row"><span class="nm">정규화 + 인식 (단말 WASM)</span><div class="lat-track"><div class="lat-fill" style="width:5%"></div></div><span class="v">5–30 ms</span></div>
+        <div class="lat-row"><span class="nm">판정 + 오디오 재생 시작</span><div class="lat-track"><div class="lat-fill n" style="width:8%"></div></div><span class="v">~50 ms</span></div>
+        <div class="lat-total"><span>합계</span><div></div><span class="v">0.55 – 0.60 s</span></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card lift"><span class="k">기본 경로 · 네트워크 0회</span><span class="h">업로드·합성 단계를 통째로 건너뜀 → ~0.6초</span><span class="d">인식·판정·재생이 모두 단말에서 끝난다. v3의 캐시 적중 경로(~0.7초)보다 짧고, <b>네트워크가 끊겨도 같은 시간에 나간다.</b></span></div>
+      <div class="card"><span class="k">최대 고정비</span><span class="h">구간 종료 대기 500 ms</span><span class="d">줄이면 문장 중간의 짧은 멈춤을 종료로 오판한다. 사용자별 적응형 임계값 학습이 Stage 2 과제.</span></div>
+      <div class="card"><span class="k">자유 문장 트랙</span><span class="h">후보 생성 + 확인 + 실시간 합성 → 수 초</span><span class="d">서버 왕복, LLM 후보 생성, 대상자 확인, ElevenLabs 실시간 합성이 더해진다. 응급 발화를 이 경로에 태우지 않는 이유다. ElevenLabs 첫 바이트 지연과 한국 왕복은 이 트랙에서만 변수다(§16 W1·W2).</span></div>
+    </div>
+    <p class="tcap">기존 PoC의 6.03초는 CPU + XTTS-v2 실측이라 이 설계에 적용되지 않는다. 위 표의 인식 시간은 단말 성능에 따라 달라지므로 <b>저가 태블릿에서 실측</b>해야 하며, MediaPipe 추출 자체가 저가 기기에서 30fps를 못 낼 수 있다는 점도 함께 확인한다(§16 W12).</p>
+
+    <h3>5.4 두 트랙</h3>
+    <div class="tw"><table>
+      <thead><tr><th>항목</th><th>고정 문장 트랙</th><th>자유 문장 트랙</th></tr></thead>
+      <tbody>
+        <tr><td>용도</td><td>응급 · 일상 등록 문장</td><td>등록되지 않은 말</td></tr>
+        <tr><td>처리 위치</td><td>단말 전부</td><td>단말(구간 검출) + 서버(후보 생성 · 합성). 인식 추론 위치는 파일럿에서 결정</td></tr>
+        <tr><td>출력</td><td>게이트 통과 시 <b>자동 발화</b></td><td>후보 3개 표시 → <b>대상자 확인 후</b> 발화</td></tr>
+        <tr><td>합성</td><td>미리 합성해 단말 보관</td><td>실시간 (ElevenLabs 스트리밍)</td></tr>
+        <tr><td>오프라인</td><td>동작</td><td>불가</td></tr>
+        <tr><td>목소리</td><td>프리셋 · 가족 · 본인</td><td>프리셋 · 본인만 (§14.4)</td></tr>
+        <tr><td>진입</td><td>항상</td><td>미정 — 고정 문장에서 거절된 구간 전달, 또는 상대가 말을 건 직후의 대화 창 (§16 W14)</td></tr>
+        <tr><td>응급 발화</td><td><b>여기서만</b></td><td>태우지 않음</td></tr>
+      </tbody>
+    </table></div>
+    <div class="flag">
+      <span class="mark">트랙 경계</span>
+      <div><b>응급 발화는 자유 문장 경로에 절대 태우지 않는다.</b> 자유 문장 트랙이 느리거나 장애가 나도 고정 문장 트랙은 영향을 받지 않아야 한다. 같은 구간에서 두 트랙이 결과를 내면 고정 문장 트랙의 게이트 통과 결과가 우선한다.</div>
+    </div>
+
+  </div>
+</section>
+
+<section id="s6">
+  <div class="sec-head"><span class="sec-num">06</span><h2>목소리 파이프라인</h2></div>
+  <p class="sec-sub">사용자가 이전 음성 파일을 넣으면 그걸 기반으로, 안 넣으면 기본 목소리로. 그 “안 넣으면”이 대다수라는 것이 설계의 출발점이다.</p>
+  <div class="sec-body">
+
+    <div class="note"><b>목소리를 관문으로 두지 않는다.</b> 뇌졸중은 갑자기 오기 때문에 사전 녹음이 거의 없는데, 대상 환자군 중 규모가 가장 크다. 목소리를 필수 입력으로 받으면 가장 큰 환자군이 온보딩에서 막힌다. 목소리 확보는 <b>사용의 전제가 아니라 진행 중인 과정</b>이다.</div>
+
+    <h3>6.1 세 경로 · 하나의 API</h3>
+    <div class="grid3">
+      <div class="card lift"><span class="k">1일차 · 즉시</span><span class="h">기본 프리셋</span><span class="d">성별·연령대 프리셋 목소리로 목소리가 없어도 시작한다. ElevenLabs에 프리셋 voice를 미리 만들어 두면 그 자체가 <b>기성 음성 라이브러리</b>가 된다.</span></div>
+      <div class="card"><span class="k">며칠 뒤</span><span class="h">동성 가족 목소리</span><span class="d">아들 → 아버지. 성대 구조가 닮아 프리셋보다 훨씬 가깝다. 제공한 가족 본인의 <b>별도 동의</b>가 필요하다.</span></div>
+      <div class="card"><span class="k">찾는 대로</span><span class="h">본인 옛 음성</span><span class="d">영상·통화 녹음·음성메시지·보이스뱅킹. ElevenLabs Instant Voice Cloning은 짧은 녹음으로도 되므로 “쓸 만한 녹음”의 기준이 낮다(길수록 정확 · §16 W3).</span></div>
+    </div>
+    <p class="tcap">세 경로 모두 같은 API에 <b>등록된 voice만 다르다</b>. 프로필을 바꾸면 고정 문장 전체를 백그라운드에서 다시 합성해 단말에 내려받고, 완료되는 순간부터 새 목소리로 나온다. 완료 전까지는 이전 목소리로 나가므로 목소리 교체 중에도 발화는 끊기지 않는다. 자유 문장은 실시간 합성이라 바로 바뀐다.</p>
+
+    <h3>6.2 합성 엔진 — 지금은 API 하나, 자체 호스팅은 나중</h3>
+    <p>지금은 관리형 API 하나로 프리셋·가족·본인 세 경로를 모두 처리한다. 자체 모델 호스팅은 GPU가 필요하므로 이번 범위에서 뺀다.</p>
+    <div class="tw"><table>
+      <thead><tr><th>옵션</th><th>방식 · 라이선스</th><th>한국어</th><th>판단</th></tr></thead>
+      <tbody>
+        <tr><td><b>ElevenLabs</b><span class="sm">Multilingual v2 등 · 즉시 음성 클로닝</span></td><td><span class="tag acc">상용 API</span></td><td>지원</td><td><b>1순위 채택.</b> GPU 불필요 · 즉시 클로닝 · 스트리밍. <b>플랜별 voice 슬롯 상한</b> 있음(§12.1). ALS·MND 무료 프로그램(Impact)은 환자 개인 대상이라 연계는 제휴 협의 필요</td></tr>
+        <tr><td><b>Qwen3-TTS</b> (0.6B / 1.7B)</td><td><span class="tag ok">Apache 2.0</span> · 자체 호스팅</td><td>지원</td><td><b>향후 후보 1순위.</b> 원가 최적화·슬롯 상한 회피용. 고정 문장 사전 합성은 배치라 <b>서버리스 GPU로 가능</b> → W3 벤치마크 후 전환 검토</td></tr>
+        <tr><td><b>CosyVoice 2</b> (0.5B)</td><td><span class="tag ok">Apache 2.0</span> · 자체 호스팅</td><td>지원</td><td>향후 후보 · 백업</td></tr>
+        <tr><td><b>Chatterbox</b> (Resemble AI)</td><td><span class="tag ok">MIT</span> · 자체 호스팅</td><td>지원 (23개 언어)</td><td>향후 후보 · 벤치마크 대상</td></tr>
+        <tr><td>XTTS-v2 (Coqui)</td><td><span class="tag stop">CPML · 비상업</span></td><td>지원</td><td><b>배제.</b> PoC에서 썼더라도 상업 배포 불가</td></tr>
+        <tr><td>F5-TTS · Fish-Speech · Spark-TTS</td><td><span class="tag stop">가중치 NC</span></td><td>—</td><td><b>배제.</b> §10 참조</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><b>왜 지금 자체 호스팅을 안 하나.</b> 한국어 + 저품질 참조 음성 조건의 클로닝 품질이 검증되지 않았고(§16 W3), 초기에는 ElevenLabs가 가장 빨리 출시할 수 있는 경로이기 때문이다. 다만 v3의 “자체 호스팅 = 상시 GPU 고정비”라는 전제는 고정 문장에는 맞지 않는다 — 사전 합성은 배치 작업이라 <b>서버리스 GPU의 콜드스타트가 문제되지 않는다</b>. 따라서 전환 시점은 볼륨이 아니라 ① W3 품질 벤치마크 결과와 ② voice 슬롯 상한(§12.1)에 먼저 닿는지로 정한다. 자유 문장의 실시간 합성은 콜드스타트가 문제되므로 당분간 ElevenLabs에 남긴다.</div>
+
+    <h3>6.3 참조 음성 처리 규칙</h3>
+    <ul class="plain">
+      <li><b>업로드 → 비공개 버킷.</b> Supabase Storage private bucket + RLS. 접근은 짧은 만료의 signed URL로만.</li>
+      <li><b>전처리는 서버에서 1회.</b> 무음 제거·노이즈 감소·라우드니스 정규화 후 클립을 정리해 ElevenLabs에 voice로 등록한다.</li>
+      <li><b>voice_id 보관, 원본은 정책을 골라서.</b> 발화마다 참조 음성을 다시 올리지 않고, ElevenLabs가 돌려주는 <code>voice_id</code>를 저장한다. 원본 오디오는 동의 화면에서 둘 중 하나를 고르게 한다 — ① 등록 후 파기(이후 voice를 다시 만들려면 재업로드 필요), ② <b>목적·기간을 명시한 별도 동의 하에 암호화 보관</b>(슬롯 회수 후 재클로닝 가능). 사용자 요청 시에는 어느 쪽이든 즉시 파기한다.</li>
+      <li><b>사전 합성.</b> (문장 × voice_id) 오디오를 voice 등록·문장 추가 시점에 전부 합성해 Supabase Storage에 두고 단말에 내려받는다(§5). 고정 문장만 쓰는 대상자는 합성이 끝나면 ElevenLabs의 voice를 삭제해 슬롯을 회수할 수 있다. 자유 문장을 쓰는 대상자는 실시간 합성을 위해 voice를 계속 유지해야 한다(§12.1).</li>
+      <li><b>목소리는 민감정보로 취급.</b> 음성은 화자 식별 목적일 때 생체인식정보로 분류될 가능성이 높다. 별도 동의 · 분리 보관 · 파기 절차를 처음부터 붙인다. 해외 API로 전송되므로 국외이전 요건도 함께 갖춘다(§11.2).</li>
+    </ul>
+
+  </div>
+</section>
+
+<section id="s7">
+  <div class="sec-head"><span class="sec-num">07</span><h2>문장 세트 — 최소로 추리는 방법</h2></div>
+  <p class="sec-sub">“이걸 최적화해서 어느 정도 다 할 수 있는 문장들을 최소한으로 추릴 수 있지 않을까?” — 가능하다. 다만 최적화 목적함수가 하나가 아니라 셋이다.</p>
+  <div class="sec-body">
+
+    <h3>7.1 서로 반대로 당기는 두 힘</h3>
+    <div class="grid2">
+      <div class="card"><span class="k">힘 1 · 의미 피복</span><span class="h">적은 문장으로 많은 상황을</span><span class="d">문장을 추상적·다목적으로 만들수록 적은 수로 넓은 상황을 덮는다. “불편해요” 하나가 여러 상황을 삼킨다.</span></div>
+      <div class="card"><span class="k">힘 2 · 시각적 변별</span><span class="h">입모양이 서로 달라야</span><span class="d">분류기는 <b>소리가 아니라 입모양</b>만 본다. 의미가 아무리 유용해도 다른 문장과 입모양이 겹치면 못 쓴다. 이것이 일반적인 AAC 코어 어휘 연구를 그대로 가져다 쓸 수 없는 이유다.</span></div>
+    </div>
+
+    <div class="flag">
+      <span class="mark">실제로 걸리는 함정</span>
+      <div>“물 주세요 / 약 주세요 / 도와주세요” — 세 문장이 <b>“주세요”라는 동일한 어미를 공유한다.</b> 전체 길이의 60% 이상이 동일한 입모양이고, 판별에 쓸 수 있는 정보가 앞 1~2음절에 몰린다. 게다가 “물(ㅁ, 양순 폐쇄)”과 “약(ㅇ, 개방)”은 구분되지만 “물”과 “뭐”는 거의 같다. <b>문장 목록은 의미로 고르고 끝나는 게 아니라, 고른 뒤 입모양 거리로 한 번 더 걸러야 한다.</b></div>
+    </div>
+
+    <h3>7.2 선별 절차</h3>
+    <ol class="steps">
+      <li><b>후보 풀 구성</b> — 기존 AAC 코어 어휘 연구 + 간병 현장 관찰 + 병원에서 쓰는 의사소통 그림판 문구. 목표 50~80개.</li>
+      <li><b>긴급도 우선 고정</b> — 응급 문장은 빈도가 낮아도 무조건 포함한다. 빈도 기반 최적화가 제일 먼저 버리는 것이 “숨이 안 쉬어져요”이기 때문이다. 이건 최적화 대상이 아니라 <b>제약 조건</b>이다.</li>
+      <li><b>비제메(viseme) 시퀀스로 인코딩</b> — 각 문장을 입모양 단위 열로 바꾼다. 한국어 양순음(ㅁㅂㅍ)·원순모음(ㅗㅜ)·개구도가 주된 축이다.</li>
+      <li><b>쌍별 거리 계산</b> — DTW 등으로 후보쌍 거리를 구하고, 거리가 임계 이하인 쌍은 <b>한쪽을 동의어로 교체</b>한다(“약 주세요” → “약이요”).</li>
+      <li><b>max-min 분산 최적화</b> — 남은 후보에서 K개를 뽑되 <b>쌍별 최소거리를 최대화</b>한다. 이것이 “최소한으로 추리기”의 수학적 형태다.</li>
+      <li><b>파일럿 혼동행렬로 교정</b> — 실제 녹화 데이터로 학습해 혼동행렬을 뽑고, 상호 혼동률이 임계 이상인 쌍을 병합하거나 교체한다. <b>여기서만 진실이 나온다.</b></li>
+    </ol>
+
+    <h3>7.3 제안 세트 · 15문장</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Tier</th><th>문장</th><th>역할</th><th>비제메 주의</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag stop">T0 응급</span></td><td><b>아파요</b></td><td>가장 높은 빈도 × 가장 높은 긴급도</td><td>“아니요”와 초성 개방 유사 — 2음절 이후로 판별</td></tr>
+        <tr><td><span class="tag stop">T0 응급</span></td><td><b>숨이 안 쉬어져요</b></td><td>대체 불가</td><td>길어서 오히려 변별력 높음</td></tr>
+        <tr><td><span class="tag stop">T0 응급</span></td><td><b>도와주세요</b></td><td>범용 구조 요청</td><td>“주세요” 계열 충돌 — T0 우선권</td></tr>
+        <tr><td><span class="tag stop">T0 응급</span></td><td><b>약이요</b></td><td>“약 주세요”에서 어미 충돌 회피로 교체</td><td>교체 사례 · 3음절로 단축</td></tr>
+        <tr><td><span class="tag warn">T1 생리</span></td><td>화장실</td><td>존엄과 직결 · 고빈도</td><td>양호</td></tr>
+        <tr><td><span class="tag warn">T1 생리</span></td><td>물이요</td><td>“물 주세요” 교체형</td><td>양순 폐쇄 ㅁ + 원순 ㅜ로 시작 → 변별 양호</td></tr>
+        <tr><td><span class="tag warn">T1 생리</span></td><td>배고파요</td><td>—</td><td>양순음 2회(ㅂ, ㅍ) 특징적</td></tr>
+        <tr><td><span class="tag warn">T1 생리</span></td><td>추워요 / 더워요</td><td><b>둘 중 하나만 채택</b></td><td>“워요” 공유 + 앞 1음절만 차이 → 동시 채택 시 혼동 위험 높음</td></tr>
+        <tr><td><span class="tag acc">T2 환경</span></td><td>자세 바꿔주세요</td><td>욕창·통증 예방과 직결</td><td>길이로 변별</td></tr>
+        <tr><td><span class="tag acc">T2 환경</span></td><td>불 꺼주세요</td><td>—</td><td>“주세요” 계열 3번째 — 파일럿에서 재검토</td></tr>
+        <tr><td><span class="tag acc">T2 환경</span></td><td>시끄러워요</td><td>“소리 줄여주세요”의 어미 충돌 회피형</td><td>교체 사례</td></tr>
+        <tr><td><span class="tag">T3 소통</span></td><td><b>네</b></td><td>가장 자주 쓰임 · 짧음</td><td><b>가장 어려움.</b> 1음절은 정보가 거의 없다 — 끄덕임·눈깜빡임 신호로 분리(아래)</td></tr>
+        <tr><td><span class="tag">T3 소통</span></td><td><b>아니요</b></td><td>—</td><td>“아파요”와 초성 공유</td></tr>
+        <tr><td><span class="tag">T3 소통</span></td><td>고마워요</td><td>사회적 상호작용 · 삶의 질</td><td>양호</td></tr>
+        <tr><td><span class="tag">T3 소통</span></td><td>잠깐만요</td><td>대화 속도 제어 — 이 서비스의 지연을 사용자가 스스로 메우는 수단</td><td>양호</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">위 세트는 <b>설계 가설이며 실측으로 확정되지 않았다.</b> “네/아니요”처럼 짧고 자주 쓰이는 문장이 가장 어렵다는 것이 이 구조의 근본 긴장이다 — <b>우선 방향은 “네/아니요”를 입모양이 아닌 신호로 분리하는 것</b>이다. MediaPipe Face Landmarker가 이미 눈깜빡임 blendshape와 머리 자세 행렬을 주므로 추가 모델 없이 끄덕임·눈깜빡임을 받을 수 있다. 입모양 “네”는 보조 신호로 남기고, 2클래스 전용 분류기는 대안으로 둔다. 최종 방식은 Stage 1 파일럿에서 확정한다. 이 신호는 자유 문장 후보 확인(§14.2)에도 그대로 쓴다.</p>
+
+    <h3>7.4 K는 몇이어야 하는가</h3>
+    <div class="tw"><table>
+      <thead><tr><th class="num">K</th><th>캘리브레이션 부담</th><th>예상 정확도</th><th>커버리지</th><th>판단</th></tr></thead>
+      <tbody>
+        <tr><td class="num">4 (T0)</td><td class="num">약 4분</td><td>가장 높음</td><td>응급만</td><td><span class="tag ok">1일차 기동 지점</span></td></tr>
+        <tr><td class="num">15</td><td class="num">약 18분 (분할)</td><td>본선 목표</td><td>일상 대부분</td><td><span class="tag ok">Stage 1 목표</span></td></tr>
+        <tr><td class="num">30+</td><td class="num">40분+</td><td>급격히 하락</td><td>넓음</td><td><span class="tag stop">비제메 충돌 폭증 · 자유 문장으로 가야 할 구간</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">문장 수를 늘려서 해결되는 구간은 생각보다 짧다. 쌍의 수가 K²로 늘어 충돌이 폭증하기 때문이다. <b>고정 문장은 30개 넘게 늘리지 않고, 그 너머는 자유 문장 트랙이 맡는다</b>(§5.4, §14).</p>
+
+  </div>
+</section>
+
+<section id="s8">
+  <div class="sec-head"><span class="sec-num">08</span><h2>데이터 모델 — Supabase</h2></div>
+  <p class="sec-sub">“데이터셋을 DB에 잘 박고 사용자 데이터와 잘 연결”하는 문제. 어려운 부분은 스키마가 아니라 <b>학습 데이터의 소유권과 파기</b>다.</p>
+  <div class="sec-body">
+
+    <h3>8.1 테이블</h3>
+    <div class="tw"><table>
+      <thead><tr><th>테이블</th><th>핵심 컬럼</th><th>역할 · 주의</th></tr></thead>
+      <tbody>
+        <tr><td><code>auth.users</code></td><td>id, email, provider</td><td>Supabase Auth 관리. Google OAuth 단독</td></tr>
+        <tr><td><code>accounts</code></td><td>user_id → auth.users, plan, billing_customer_id, org_id</td><td>결제·플랜의 귀속 단위</td></tr>
+        <tr><td><code>subjects</code></td><td>id, account_id, display_name, birth_year, sex, condition, trigger_mode</td><td><b>실제로 말하는 사람.</b> 계정 1 : 대상자 N</td></tr>
+        <tr><td><code>consents</code></td><td>subject_id, kind, granted_by, granted_at, revoked_at, doc_version, evidence</td><td><b>감사 추적의 핵심.</b> kind = biometric / voice_self / voice_family / research_use / <b>overseas_transfer</b>(음성의 해외 API 전송) / <b>research_video</b>(입 영역 영상 수집) / voice_retention(원본 음성 보관). 동의 주체가 계층마다 다르므로 <code>granted_by</code>에 본인·법정대리인·가족을 구분해 적는다</td></tr>
+        <tr><td><code>phrases</code></td><td>id, text, tier, is_global, account_id</td><td>전역 15문장 + 사용자 추가 문장</td></tr>
+        <tr><td><code>subject_phrases</code></td><td>subject_id, phrase_id, class_index (CNN 방식만), enabled, sample_count, accuracy</td><td><b>인식 대상 ↔ 문장의 매핑.</b> 대상자마다 활성 문장 수가 다르다(§3.3)</td></tr>
+        <tr><td><code>calibration_sessions</code></td><td>id, subject_id, started_at, device_info, lighting_score</td><td>녹화 세션 단위. 조명·각도 메타를 남겨야 정확도 저하 원인 추적이 가능</td></tr>
+        <tr><td><code>landmark_samples</code></td><td>id, session_id, subject_id, phrase_id, seq (storage path), mouth_video_path, voiced, frames, fps, quality, research_use</td><td><b>데이터셋 본체.</b> 좌표 시퀀스는 행이 아니라 <code>.npz</code> 파일로 Storage에, DB에는 경로와 메타만. 연구 영상 동의자는 입 영역 크롭 영상 경로를 함께 두고, <code>voiced</code>로 소리 낸/무성 녹화를 구분한다(§15.2). <b>국내 리전에만 저장</b></td></tr>
+        <tr><td><code>models</code></td><td>id, subject_id (공용 인코더는 null), kind (dtw_templates / cnn / shared_encoder), version, artifact_path, confusion_matrix, val_accuracy, created_at</td><td>인식기. DTW면 템플릿 묶음, CNN이면 ONNX. 인식 방식을 파일럿에서 비교하므로(§4.3) 두 형태를 같은 테이블에 둔다. 혼동행렬은 JSON으로 보관해 문장 교체 판단에 사용(§7.2)</td></tr>
+        <tr><td><code>voice_profiles</code></td><td>id, subject_id, source (preset/family/self), ref_audio_path, provider_voice_id, consent_id</td><td><b><code>consent_id</code>가 NOT NULL.</b> 동의 없는 참조 음성이 존재할 수 없게 스키마로 막는다. <code>provider_voice_id</code> = ElevenLabs voice_id</td></tr>
+        <tr><td><code>phrase_audio</code></td><td>subject_id, phrase_id, voice_profile_id, audio_path, char_count, created_at</td><td><b>사전 합성 오디오.</b> (문장 × 목소리) 조합. voice 등록·문장 추가 시 생성하고 단말이 내려받는다. 고정 문장 발화 경로는 이 오디오만 쓴다(§5)</td></tr>
+        <tr><td><code>utterances</code></td><td>id, subject_id, track (fixed / free), phrase_id, text, score, gate_result, latency_ms, created_at</td><td>발화 로그. <b>좌표도 오디오도 저장하지 않는다</b> — 어떤 문장이 언제 얼마의 점수로 나갔는지만. 고정 문장은 단말에 쌓았다가 동기화한다. 자유 문장 <code>text</code> 보존은 §14.4 조건을 따른다</td></tr>
+        <tr><td><code>usage_events</code></td><td>account_id, kind, qty, period</td><td>과금·쿼터 산정</td></tr>
+        <tr><td><code>subscriptions</code></td><td>account_id, plan, status, current_period_end, pg_ref</td><td>결제 상태. 결제대행 웹훅으로 갱신</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>8.2 격리와 보관</h3>
+    <div class="grid2">
+      <div class="card"><span class="k">RLS</span><span class="h">모든 테이블에 예외 없이</span><span class="d">표준 패턴은 <code>auth.uid()</code> 기반. 대상자 데이터는 <code>subjects.account_id</code>를 거쳐 검증한다 —<br><code>using (exists (select 1 from accounts a where a.id = subjects.account_id and a.user_id = auth.uid()))</code>. Storage의 <code>storage.objects</code>에도 동일 정책을 건다.</span></div>
+      <div class="card"><span class="k">보관 · 파기</span><span class="h">원본은 특징 추출 후 지체없이</span><span class="d">얼굴 영상은 <b>애초에 서버에 오지 않는다</b>. 참조 음성 원본은 동의 화면에서 고른 정책(등록 후 파기 또는 암호화 보관 · §6.3)을 따르고, 사용자 요청 시 즉시 파기. 학습 데이터와 입 영역 영상은 국내 리전에만 둔다. 좌표 시퀀스는 보유 기간을 명시하고 계정 삭제 시 연쇄 파기. 민감정보는 <b>다른 개인정보와 분리 보관</b>한다.</span></div>
+    </div>
+
+    <h3>8.3 학습 데이터의 2차 이용 — 지금은 못 한다</h3>
+    <div class="flag">
+      <span class="mark">타임라인 주의</span>
+      <div>수집한 좌표 데이터를 <b>다른 사용자를 위한 공통 모델 학습</b>에 쓰는 것은 “수집 목적 외 이용”이다. 개인정보 보호법 개정(2026-09-08 공포)이 익명·가명처리가 곤란한 정보(음성·이미지 등)에 대해 목적 외 이용 특례를 신설했지만 <b>시행은 2027-03-09</b>다. 2026년 현재는 적용할 수 없다.<br><br><b>따라서 지금 할 일:</b> ① 동의서에 연구·모델 개선 목적 이용을 <b>별도 선택 항목</b>으로 분리해 받아 둔다(<code>consents.kind = 'research_use'</code>), ② 그 동의가 있는 데이터만 <code>landmark_samples</code>에 플래그로 표시해 물리적으로 분리 가능하게 둔다, ③ 특례 시행 시점에 심의·위험요인평가서 트랙을 별도로 검토한다.<br><br>지인·참여자에게서 받는 학습 데이터는 이 제약과 별개로, 처음부터 <b>상업 이용까지 포함한 동의서</b>를 받고 수집한다(§15.2).</div>
+    </div>
+
+  </div>
+</section>
+
+<section id="s9">
+  <div class="sec-head"><span class="sec-num">09</span><h2>컴포넌트 계약과 API</h2></div>
+  <p class="sec-sub">경계면이 흔들리면 통합 단계에서 원인을 못 찾는다. 각 컴포넌트를 독립적으로 만들고 테스트할 수 있도록 입출력을 먼저 고정한다.</p>
+  <div class="sec-body">
+
+    <div class="tw"><table>
+      <thead><tr><th>ID</th><th>컴포넌트</th><th>위치</th><th>입력</th><th>출력</th></tr></thead>
+      <tbody>
+        <tr><td class="num">C1</td><td>입술 추출기</td><td>브라우저</td><td>카메라 프레임</td><td><code>{t, points[40][2]}</code> 스트림</td></tr>
+        <tr><td class="num">C2</td><td>구간 검출기</td><td>브라우저</td><td>입 개폐량 시계열</td><td>발화 후보 구간</td></tr>
+        <tr><td class="num">C3</td><td>정규화기</td><td>브라우저</td><td>원시 좌표 시퀀스</td><td><code>float32[32][80]</code></td></tr>
+        <tr><td class="num">C4</td><td>인식기</td><td>브라우저 (DTW 또는 소형 CNN · §4.3)</td><td><code>float32[32][80]</code></td><td><code>{label, score}</code> · 거절 포함</td></tr>
+        <tr><td class="num">C5</td><td>판정 게이트</td><td>브라우저</td><td><code>{label, score, mode}</code></td><td><code>speak</code> / <code>show</code> / <code>discard</code></td></tr>
+        <tr><td class="num">C6</td><td>TTS 합성기</td><td>ElevenLabs API<span class="sm">사전 합성 · 자유 문장 실시간</span></td><td>문장 텍스트 + voice_id</td><td>오디오 스트림</td></tr>
+        <tr><td class="num">C6b</td><td>사전 합성기</td><td>Vercel + Supabase → 단말</td><td>(문장 × voice_id) 목록</td><td>단말에 보관된 오디오 묶음</td></tr>
+        <tr><td class="num">C7</td><td>음성 프로필 등록기</td><td>Vercel + ElevenLabs</td><td>참조 음성 + 동의</td><td><code>voice_id</code> → <code>voice_profiles</code></td></tr>
+        <tr><td class="num">C8</td><td>데이터 수집 도구</td><td>브라우저 (온보딩)</td><td>녹화 세션</td><td><code>.npz</code> → Storage</td></tr>
+        <tr><td class="num">C9</td><td>학습 파이프라인</td><td>오프라인 배치 · 국내<span class="sm">사용자별 CNN은 CPU · 공용 인코더는 GPU</span></td><td><code>.npz</code> · 입 영역 영상</td><td>사용자별 CNN(<code>.onnx</code>) 또는 공용 인코더 + 혼동행렬 → <code>models</code></td></tr>
+        <tr><td class="num">C10</td><td>자유 문장 인식기</td><td>단말 WebGPU 또는 서버리스 GPU (미정)</td><td>발화 구간 입 영역 데이터</td><td>음소 확률열</td></tr>
+        <tr><td class="num">C11</td><td>대화 맥락 수집기</td><td>브라우저 → 음성인식 API</td><td>대화 상대의 발화 음성</td><td>직전 대화 텍스트 (원본 음성 비저장)</td></tr>
+        <tr><td class="num">C12</td><td>후보 생성기</td><td>Vercel Function → LLM API</td><td>음소 확률열 + 대화 맥락</td><td>후보 문장 3개 + <code>candidate_id</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><b>고정 문장 트랙에는 GPU가 없다.</b> DTW는 학습이 없고, 사용자별 소형 CNN은 샘플이 수십 건이라 CPU로 충분하다. GPU가 필요할 수 있는 곳은 자유 문장 트랙뿐이다 — C9의 공용 인코더 학습(AI Hub 1,150시간 규모)과 C10 인식 추론. 입력이 좌표면 모델이 작아 부담이 적고, 입 영역 영상이면 GPU가 사실상 필수다(§15.3). 어느 쪽이든 <b>AI Hub 데이터로 학습하는 작업은 국내에서</b> 한다 — 국외 반출에 별도 합의가 필요하므로 Colab(해외 서버)에 올리지 않는다(§10). 고정 문장 합성은 C6b 사전 합성으로 발화 경로에서 빠진다.</div>
+    <p class="tcap">C3·C4는 Stage 1부터 브라우저에서 돈다. 학습(Python)과 추론(JS)의 정규화가 갈라지면 정확도가 조용히 무너지므로, CNN 방식이면 <b>정규화를 ONNX 그래프 안에 넣거나 골든 픽스처로 동등성 테스트</b>를 CI에 건다. DTW 방식은 학습이 없어 이 문제가 생기지 않는다.</p>
+
+    <h3>API 엔드포인트</h3>
+    <div class="tw"><table>
+      <thead><tr><th>메서드 · 경로</th><th>요청</th><th>응답</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr><td><code>POST /api/utterances/sync</code></td><td>단말에 쌓인 고정 문장 발화 로그</td><td><code>{synced}</code></td><td>발화 경로와 무관 — 실패해도 발화에 영향 없음. 다음 연결 때 재시도</td></tr>
+        <tr><td><code>POST /api/free-utterance</code></td><td>입 영역 데이터(또는 음소 확률열), subject_id, 대화 맥락 텍스트</td><td><code>{candidates: [{candidate_id, text}×3]}</code></td><td><b>자유 문장 트랙.</b> 후보 생성만 한다. 합성은 확인 후 별도 요청. 4.5MB 페이로드 한도 확인 필요</td></tr>
+        <tr><td><code>POST /api/free-utterance/confirm</code></td><td>candidate_id</td><td>오디오 스트림</td><td><b>입모양 기원 증명</b> — 서버가 발급한 candidate_id로만 합성한다. 텍스트를 직접 받는 합성 경로는 없다(§14.4)</td></tr>
+        <tr><td><code>POST /api/calibration/sample</code></td><td>좌표 시퀀스, phrase_id, session_id</td><td><code>{sample_id, quality}</code></td><td>품질 미달이면 즉시 재녹화 유도</td></tr>
+        <tr><td><code>POST /api/voice-profile</code></td><td>오디오 파일(signed upload), consent_id</td><td><code>{profile_id, voice_id, preview_url}</code></td><td>전처리 → ElevenLabs voice 등록 → 미리듣기 → 고정 문장 전체 사전 합성</td></tr>
+        <tr><td><code>POST /api/train</code></td><td>subject_id</td><td><code>{job_id}</code></td><td>비동기 학습(CNN 방식일 때). DTW 방식이면 템플릿 저장만 하므로 불필요. 완료는 Supabase Realtime으로 알림</td></tr>
+        <tr><td><code>GET /api/bundle/:subject_id</code></td><td>—</td><td>인식기(템플릿 또는 ONNX)와 사전 합성 오디오의 서명 URL</td><td>단말이 오프라인 발화에 필요한 것을 내려받는 경로</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">지속 연결이 필요한 유일한 지점(학습 완료 알림)은 Vercel WebSocket이 아니라 <b>Supabase Realtime</b>에 위임한다. 클라이언트가 Supabase에 직접 붙고, Vercel 함수는 상태 변경만 쓴다.</p>
+
+  </div>
+</section>
+
+<section id="s10">
+  <div class="sec-head"><span class="sec-num">10</span><h2>라이선스 매트릭스</h2></div>
+  <p class="sec-sub">제외된 것들은 성능이 아니라 라이선스 때문에 빠졌다. 그리고 대부분의 함정은 코드가 아니라 <b>가중치</b>에 있다.</p>
+  <div class="sec-body">
+
+    <div class="flag stop">
+      <span class="mark">반복되는 함정</span>
+      <div><b>코드 라이선스와 가중치 라이선스는 다를 수 있다.</b> Auto-AVSR은 코드가 Apache 2.0이지만 가중치가 BBC 소유 LRS2/LRS3로 학습돼 상업 이용이 막힌다. F5-TTS는 코드가 MIT이지만 사전학습 가중치가 CC-BY-NC 데이터셋(Emilia)으로 학습되어 <b>파인튜닝해도 상업 이용이 불가</b>하다는 것이 메인테이너의 답변이다. 저장소 루트의 <code>LICENSE</code> 파일만 보고 판단하면 전부 놓친다.</div>
+    </div>
+
+    <div class="ctl-bar">
+      <button class="chip" id="f-all" aria-pressed="true" data-f="all">전체</button>
+      <button class="chip" id="f-ok" aria-pressed="false" data-f="ok">채택 가능만</button>
+      <button class="chip" id="f-no" aria-pressed="false" data-f="stop">배제된 것만</button>
+    </div>
+    <div class="tw"><table id="lic">
+      <thead><tr><th>구성요소</th><th>라이선스</th><th>상업 이용</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr data-s="ok"><td><b>ElevenLabs</b> (TTS + 음성 클로닝)<span class="sm">관리형 API · 스트리밍 · Multilingual</span></td><td>상용 API</td><td><span class="tag acc">계약</span></td><td><b>1순위 채택.</b> GPU 불필요. 즉시 클로닝. 플랜별 voice 슬롯 상한 있음. Impact Program은 ALS·MND 환자 개인 대상이라 서비스 연계는 제휴 협의 필요. 약관상 의료·보조 용도와 제3자 음성 동의 요건은 계약 전 확인(§16 W13)</td></tr>
+        <tr data-s="ok"><td><b>MediaPipe Tasks</b> (Face Landmarker)<span class="sm">입술 랜드마크 · 브라우저 WASM</span></td><td>Apache 2.0</td><td><span class="tag ok">가능</span></td><td>얼굴당 478 랜드마크, 입술 영역 포함. <code>@mediapipe/tasks-vision</code>으로 브라우저 직접 실행</td></tr>
+        <tr data-s="ok"><td><b>ONNX Runtime Web</b></td><td>MIT</td><td><span class="tag ok">가능</span></td><td>WASM/WebGPU 백엔드. Stage 2 온디바이스 분류의 실행기</td></tr>
+        <tr data-s="ok"><td><b>PyTorch</b> (1D-CNN 학습)</td><td>BSD-3</td><td><span class="tag ok">가능</span></td><td>사용자별 CNN과 공용 인코더 학습. 사용자별 CNN은 <b>자체 수집 데이터만</b> 쓰므로 상속 문제가 없고, 공용 인코더는 AI Hub 데이터 조건을 따른다(아래)</td></tr>
+        <tr data-s="ok"><td><b>Qwen3-TTS</b> (0.6B / 1.7B)</td><td>Apache 2.0</td><td><span class="tag ok">가능(향후)</span></td><td>오픈 웨이트. 상업 이용 자체는 가능하나 <b>자체 호스팅=GPU 필요</b> → 대량 구간 원가 최적화 단계 후보(§6.2)</td></tr>
+        <tr data-s="ok"><td><b>CosyVoice 2</b> (0.5B)</td><td>Apache 2.0</td><td><span class="tag ok">가능(향후)</span></td><td>한국어 지원. 자체 호스팅 백업 엔진</td></tr>
+        <tr data-s="ok"><td><b>Chatterbox</b> (Resemble AI)</td><td>MIT</td><td><span class="tag ok">가능(향후)</span></td><td>23개 언어. 자체 호스팅 벤치마크 대상</td></tr>
+        <tr data-s="ok"><td><b>React · PWA · Next.js</b></td><td>MIT</td><td><span class="tag ok">가능</span></td><td>—</td></tr>
+        <tr data-s="warn"><td><b>IndexTTS 2</b></td><td>코드 Apache 2.0 / 가중치 별도 라이선스</td><td><span class="tag warn">회색</span></td><td>가중치에 매출 기준 사전승인 조항. 중문·영문 조항이 상충하며 미해결 — <b>회피 권장</b></td></tr>
+        <tr data-s="ok"><td><b>AI Hub 립리딩(입모양) 음성인식 데이터</b> · OLKAVS<span class="sm">1,107명 · 오디오 1,150시간 · 9개 시점 · FHD 30fps · 소리 내어 말한 발화</span></td><td>AI Hub 이용정책</td><td><span class="tag ok">조건부 가능</span></td><td><b>영리 목적 연구·개발 허용</b> — “지능형 제품・서비스… 영리적・비영리적 연구・개발 목적으로 활용할 수 있습니다.” 별도 협의는 <b>데이터셋 자체의 판매 등</b>에 한한다. 조건: 국외 반출·국외 소재자 이용은 별도 합의, 승인 없는 제3자 제공 금지, 내국인만 신청, 출처 표시. <b>학습은 국내 리전에서</b>. 투자·인증 대비 수행기관(마인즈랩) 서면 확인 권장(§16 W19)</td></tr>
+        <tr data-s="stop"><td><b>Coqui XTTS-v2</b></td><td>CPML</td><td><span class="tag stop">불가</span></td><td>비상업 전용. PoC에서 썼더라도 상업 배포 불가</td></tr>
+        <tr data-s="stop"><td><b>Auto-AVSR 가중치</b></td><td>LRS2/LRS3 조건 상속</td><td><span class="tag stop">불가</span></td><td>코드는 Apache 2.0이나 가중치는 학습 데이터셋 조건을 따른다고 README에 명시</td></tr>
+        <tr data-s="stop"><td><b>AV-HuBERT</b></td><td>Meta 커스텀</td><td><span class="tag stop">불가</span></td><td>“commercial or production purposes” 명시적 금지</td></tr>
+        <tr data-s="stop"><td><b>F5-TTS 사전학습 가중치</b></td><td>Emilia(CC-BY-NC) 상속</td><td><span class="tag stop">불가</span></td><td>코드는 MIT. <b>파인튜닝해도 상업 이용 불가</b>(메인테이너 답변). 한국어 미지원이라 어차피 후보 아님</td></tr>
+        <tr data-s="stop"><td><b>Fish-Speech / OpenAudio</b> · <b>Spark-TTS</b></td><td>CC-BY-NC-SA-4.0</td><td><span class="tag stop">불가</span></td><td>비영리 전용</td></tr>
+        <tr data-s="stop"><td><b>LRS2 / LRS3</b> (BBC)</td><td>연구 목적</td><td><span class="tag stop">불가</span></td><td>이 데이터로 학습된 모든 공개 VSR 체크포인트가 여기에 묶인다. <b>Stage 3 자유 문장을 할 때 가장 크게 걸리는 제약</b>(§14)</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">ElevenLabs 채택 확정 전, 약관에서 <b>의료·보조기술 용도의 허용 범위</b>와 <b>제3자(환자·가족·사망자) 음성 클로닝의 동의 요건</b>을 반드시 확인하고 그 시점 스냅샷을 보관할 것. 오픈 웨이트 후보(Qwen3-TTS 등)는 향후 자체 호스팅 시 모델 카드의 라이선스 필드와 <code>NOTICE</code>를 다시 확인한다.</p>
+
+  </div>
+</section>
+
+<section id="s11">
+  <div class="sec-head"><span class="sec-num">11</span><h2>법 · 규제 체크리스트</h2></div>
+  <p class="sec-sub">법률 자문이 아니라 정리용 자료다. “법률 검토 필요”로 표시된 항목은 출시 전에 전문가 확인이 필요하다.</p>
+  <div class="sec-body">
+
+    <h3>11.1 인공지능기본법</h3>
+    <div class="tw"><table>
+      <thead><tr><th>항목</th><th>내용</th><th>리보 적용</th></tr></thead>
+      <tbody>
+        <tr><td>시행</td><td>2026-01-22 법률·시행령 시행. 일부 자료는 공공조달·취약계층 지원의 전면 시행을 2026-07-21로 별도 표기 — 조문별 시행일 확인 필요</td><td><span class="tag warn">이미 시행 중</span></td></tr>
+        <tr><td>계도기간</td><td>법령상 유예가 아니라 행정 운영 방침. 투명성 의무 등에 대해 1년 이상 사실조사·과태료 부과 유예. <b>딥페이크 식별표시는 계도 없이 즉시 적용</b>이라는 자료 있음</td><td><span class="tag warn">유예를 전제로 설계하지 않는다</span></td></tr>
+        <tr><td>사전 고지</td><td>생성형 AI 기반 서비스임을 이용자에게 고지. 미고지 시 과태료 500만원</td><td><span class="tag ok">온보딩 동의 화면에 포함</span></td></tr>
+        <tr><td>생성물 표시</td><td>결과물이 AI 생성물임을 표시. 실제와 구분하기 어려운 가상의 음향 제공 시 별도 명시</td><td><span class="tag stop">설계 필요</span> 본인 목소리 복원 음성은 정의상 “실제와 구분하기 어려운 가상 음향”이다. <b>다만 응급 발화 앞에 안내음을 붙이면 제품이 망가진다</b> — 화면 표시·설정 고지·메타데이터 워터마크 등 대체 이행 방식의 적법성을 확인해야 한다. ElevenLabs 등 상용 API가 자체 출처표시를 넣는 경우가 있어 이행 수단으로 활용 가능(약관 확인)</td></tr>
+        <tr><td>고영향 AI</td><td>① 보건의료·의료기기 등 10개 영역 + ② 생명·신체 안전·기본권에 중대한 영향</td><td><span class="tag warn">법률 검토 필요</span> 진단이 아니므로 자동 해당은 아닐 수 있으나, 응급 의사표현에 관여하므로 ②로 해석될 리스크가 실재한다. <b>사전 검토와 문서화를 권장</b></td></tr>
+        <tr><td>국내대리인</td><td>해외 사업자 중 매출·이용자 기준 충족 시</td><td><span class="tag ok">국내 법인이면 미해당</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>11.2 개인정보보호법 — 생체정보</h3>
+    <div class="tw"><table>
+      <thead><tr><th>대상</th><th>판단</th><th>조치</th></tr></thead>
+      <tbody>
+        <tr><td>얼굴 영상</td><td>생체정보 원본</td><td><b>서버로 전송하지 않는다.</b> 이것이 구조적 해법</td></tr>
+        <tr><td>입술 랜드마크 좌표</td><td><span class="tag warn">법률 검토 필요</span> 가이드라인상 인증·식별 목적이면 생체인식정보(민감정보), 그 외 목적이면 일반 생체정보로 구분된다. 리보의 좌표는 <b>발화 내용 인식</b>이 목적이라 민감정보 해당성이 낮아질 여지가 있으나, 화자 식별에 전용 가능한 특성 때문에 감독당국이 민감정보로 볼 가능성을 배제할 수 없다</td><td><b>보수적으로 민감정보로 취급한다.</b> 별도 동의 · 분리 보관 · 파기 절차를 처음부터 적용. PIPC 사전 질의 권장</td></tr>
+        <tr><td>참조 음성</td><td>화자 식별 목적의 특징 추출이면 생체인식정보</td><td>별도 동의 필수. 원본은 파기가 기본이며, 보관은 목적(재클로닝)·기간을 명시한 별도 동의가 있을 때만(§6.3). ElevenLabs(해외)로 전송되므로 <span class="tag warn">법률 검토 필요</span> <b>국외이전 요건</b>(동의 또는 처리방침 공개 등)을 갖추고 <code>consents.kind = 'overseas_transfer'</code>로 기록. 처리·보관 위치는 계약으로 확인</td></tr>
+        <tr><td>입 영역 크롭 영상<span class="sm">연구 수집 트랙 한정</span></td><td>얼굴 일부 영상 — 생체정보</td><td>연구 참여에 별도 동의한 사람만. 국내 리전 분리 보관, 보유 기간 명시, 철회 시 파기. 일반 사용자의 런타임에서는 수집하지 않는다(§15)</td></tr>
+        <tr><td>대화 상대 음성<span class="sm">자유 문장 맥락</span></td><td><span class="tag warn">법률 검토 필요</span> 보호자·의료진 등 제3자의 음성과 발화 내용</td><td>음성인식 후 텍스트만 짧게 쓰고 원본 음성은 저장하지 않는다. 기기 화면에 듣는 중 표시, 계정 소유자 고지·동의, Care(기관) 도입 시 기관 차원 고지. 직전 대화 텍스트도 후보 생성 후 파기</td></tr>
+        <tr><td>온디바이스 처리</td><td>가이드라인상 권장되는 안전한 방식이지만 <b>법적 의무를 면제하지 않는다</b></td><td>“영상이 나가지 않는다”는 리스크 감축이지 면책이 아니다. 동의·안전조치·파기는 그대로 이행</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>11.3 의료기기 해당 여부</h3>
+    <div class="note">판단 근거는 <b>디지털의료제품법</b>(2025-01-24 시행)과 디지털의료기기소프트웨어 허가·심사 가이드라인이다. 핵심 요건은 “질병을 예방·관리 또는 치료하기 위한 목적으로 환자에게 제공”되는지. <b>AAC 소프트웨어가 비의료기기라고 명시한 식약처 공식 사례는 확인하지 못했다</b>(미확인). 사용 목적을 “의사소통 보조·발화 대체”로 한정하고, 출시 전 <b>식약처 사전 상담 또는 비의료기기 확인 신청</b>으로 확정할 것.</div>
+
+    <h3>11.4 음성 클로닝 · 동의 계층</h3>
+    <div class="tw"><table>
+      <thead><tr><th>참조 음성 출처</th><th>동의 주체</th><th>주의</th></tr></thead>
+      <tbody>
+        <tr><td>프리셋</td><td>프리셋 제공 성우 — 합성음 제작 이용에 대한 사전 동의 및 계약</td><td>상용 서비스들이 성우 본인이 동의문을 직접 녹음하게 하는 수준의 검증을 요구한다. <b>같은 수준으로 맞추는 것이 안전</b></td></tr>
+        <tr><td>본인 옛 음성</td><td>본인. 의사표현 불가 시 법정대리인·후견인</td><td><span class="tag warn">법률 검토 필요</span> 개인정보보호법이 의사무능력자를 법정대리인 동의 대상으로 명문 규정하는지 조문 확인 필요. 실무는 통상 민법상 후견제도 준용</td></tr>
+        <tr><td>가족 목소리</td><td><b>목소리를 제공한 가족 본인</b></td><td>대상자의 동의로 갈음할 수 없다. 별도 <code>consents</code> 레코드로 분리 기록</td></tr>
+        <tr><td>사망자 음성</td><td>유족</td><td>사자의 인격권 침해에 대해 유족의 고유 이익 침해를 근거로 구제한 판례가 있다. 실무상 유족 동의를 받는다</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">인격표지영리권(퍼블리시티권) 민법 신설안은 2026-09 기준 국회 통과 여부 미확인. 딥보이스 단독에 성폭력처벌법 제14조의2가 적용되는지도 조문상 미확인이다. 리보는 성적 허위영상물과 무관하나, “타인 사칭 음성 생성” 리스크 관리 차원에서 동의 확보 프로세스를 갖추는 것이 안전하다.</p>
+
+    <h3>11.5 해외 진출 시</h3>
+    <ul class="plain">
+      <li><b>EU AI Act 제50조</b> — 2026-08-02부터 적용. 실존 인물을 닮은 AI 생성 오디오는 “명백히 조작·생성된 콘텐츠임을 공개”해야 한다. <b>의료·보조기술 목적의 명시적 예외는 확인되지 않았다.</b> EU 진출 시 표시 의무 대상을 전제로 설계해야 한다.</li>
+      <li><b>HIPAA</b> — 병원에 B2B로 공급하며 환자 데이터를 처리하면 Business Associate로 적용 가능성이 높다. ElevenLabs 등 하위 처리자와의 BAA 체결 가능 여부도 함께 확인. 소비자 직접 판매(B2C)는 통상 미적용이나 FTC Health Breach Notification Rule 등이 대신 적용될 수 있다.</li>
+    </ul>
+
+  </div>
+</section>
+
+<section id="s12">
+  <div class="sec-head"><span class="sec-num">12</span><h2>결제 모델과 원가</h2></div>
+  <p class="sec-sub">상시 GPU를 두지 않으면서 원가는 <b>플랜형 구독 + 사용량</b> 구조가 됐다. 고정 문장 사전 합성이 사용량을 거의 없애는 대신, <b>voice 슬롯 상한</b>이 새 제약으로 등장한다.</p>
+  <div class="sec-body">
+
+    <h3>12.1 왜 이제 변동비인가</h3>
+    <div class="grid2">
+      <div class="card lift"><span class="k">지금 · 관리형 TTS API (채택)</span><span class="h">플랜 기본료 + 사전 합성으로 한계원가 ≈ 0</span><span class="d">ElevenLabs는 순수 종량제가 아니다 — <b>월 구독 플랜 + 크레딧 + 커스텀 voice 슬롯 상한</b> 구조다(도움말 기준 슬롯 Creator 30 · Pro 160 · Scale/Business 660, voice 생성·편집 횟수에도 월 한도). 콜드스타트는 없고, 고정 문장은 한 번만 합성하므로 반복 발화의 한계원가는 0이다. 대신 <b>원가를 계단식으로 올리는 것은 글자 수가 아니라 슬롯 수</b>다.</span></div>
+      <div class="card"><span class="k">나중 · 자체 호스팅 TTS</span><span class="h">사전 합성은 서버리스 GPU · 실시간은 상시 GPU</span><span class="d">고정 문장 사전 합성은 배치라 서버리스 GPU(초 단위 과금)로 돌릴 수 있어 <b>고정비 없이</b> 오픈 웨이트 모델(§6.2)로 옮길 수 있다. 슬롯 상한도 없다. 자유 문장의 실시간 합성은 콜드스타트 때문에 상시 GPU(L4급 월 $350+)가 필요하므로 대량 구간 전까지 ElevenLabs에 남긴다.</span></div>
+    </div>
+    <div class="note">서버리스 GPU는 <b>콜드스타트 4–6초</b>라 발화 순간의 합성에는 못 쓴다 — “아파요” 하고 5초 뒤에 소리가 나는 건 제품이 아니다. v4에서는 고정 문장 합성이 발화 순간에서 빠졌으므로 이 제약은 <b>자유 문장 실시간 합성에만</b> 남는다.</div>
+    <p>결과적으로 초기 원가는 낮다. 다만 가입자가 늘면 슬롯 상한에서 플랜이 계단식으로 바뀌고, 660명을 넘으면 엔터프라이즈 계약이 필요하다. 그 전에 W3 품질 벤치마크를 통과하면 고정 문장 합성부터 §6.2 오픈 웨이트로 옮겨 슬롯 부담을 줄인다.</p>
+
+    <h3>12.2 원가 계산기</h3>
+    <div class="panel">
+      <div class="panel-t">사용자 수와 발화량을 바꿔 보며 월 원가 구조를 확인한다</div>
+      <div class="calc">
+        <div>
+          <div class="slider">
+            <label class="sl" for="u"><span>활성 대상자 수</span><span class="v" id="uv">100명</span></label>
+            <input type="range" id="u" min="10" max="5000" step="10" value="100">
+          </div>
+          <div class="slider">
+            <label class="sl" for="n"><span>1인 월 자유 문장 발화 수</span><span class="v" id="nv">60건</span></label>
+            <input type="range" id="n" min="0" max="600" step="10" value="60">
+          </div>
+          <div class="slider">
+            <label class="sl" for="p"><span>월 구독료 (Voice 플랜)</span><span class="v" id="pv">19,900원</span></label>
+            <input type="range" id="p" min="0" max="49900" step="100" value="19900">
+          </div>
+          <p class="tcap" style="margin-top:4px">가정 — 고정 문장은 (문장 × 목소리)를 미리 1회 합성하므로 <b>고정 문장 반복 발화의 한계원가는 0</b>. 대상자당 사전 합성은 15문장 × 평균 7자 × 월 2회 재생성 ≈ 210자, 자유 문장은 1건당 15자로 잡는다. <b>모든 대상자가 voice를 유지한다고 가정</b>(전원 자유 문장 사용 · 최악)해 슬롯 수 = 대상자 수. 플랜은 ElevenLabs 가격 페이지·도움말 2026-09 확인값(Pro $99 · 160개, Scale $299 · 660개, 660 초과는 엔터프라이즈 — Business 요금 $990로 가정). 글자 단가 $0.17/1,000자(플랜 포함 크레딧은 무시한 보수적 계산), 인프라 $45/월(Vercel Pro + Supabase Pro), 환율 1,350원/$, 구독료는 부가세 포함가, PG 수수료 3%. <b>모두 추정치이며 계약 전 재확인한다</b>(§16 W13).</p>
+        </div>
+        <div class="readout">
+          <div class="ro"><span class="k">필요 voice 슬롯 · 플랜</span><span class="v" id="r-slot">100개 · Pro(160)</span></div>
+          <div class="ro"><span class="k">월 합성 글자 수</span><span class="v" id="r-billed">111,000자</span></div>
+          <div class="ro"><span class="k">ElevenLabs 플랜 기본료</span><span class="v" id="r-plan">₩133,650</span></div>
+          <div class="ro"><span class="k">월 총 원가</span><span class="v" id="r-cost">₩219,875</span></div>
+          <div class="ro hi"><span class="k">대상자 1인당 원가</span><span class="v" id="r-unit">₩2,199</span></div>
+          <div class="ro"><span class="k">월 순매출 (부가세·PG 제외)</span><span class="v" id="r-rev">₩1,754,818</span></div>
+          <div class="ro hi"><span class="k">월 손익</span><span class="v" id="r-margin">+₩1,534,944</span></div>
+          <div class="ro"><span class="k">손익분기 대상자</span><span class="v" id="r-be">12명</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="tcap">고정 문장 발화는 사전 합성이라 원가에 반영되지 않는다. 원가를 계단식으로 올리는 것은 <b>voice 슬롯 상한</b>이다 — 대상자 수를 160명과 660명 너머로 올려 보면 플랜이 바뀌는 지점이 보인다. 고정 문장만 쓰는 대상자는 사전 합성 후 voice를 삭제해 슬롯을 돌려받을 수 있으나(§6.3), 자유 문장 사용자는 불가능하다. 이 계산기는 <b>운영 인건비 · 법률 검토 · 자유 문장 인식(GPU · LLM · 음성인식) 원가를 포함하지 않는다</b>(§16).</p>
+
+    <h3>12.3 요금제</h3>
+    <div class="tw"><table>
+      <thead><tr><th>플랜</th><th class="num">가격</th><th>포함</th><th>근거</th></tr></thead>
+      <tbody>
+        <tr><td><b>응급</b><span class="sm">Tier 0 · 영구 무료</span></td><td class="num">0원</td><td>응급 4문장 + 기본 프리셋 음성 + 무제한 발화</td><td><b>응급 발화는 절대 유료화하지 않는다.</b> 4문장 × 프리셋은 사전 합성되어 단말에 보관되므로 한계원가가 사실상 0이므로 무료 유지 부담이 없다. 결제 실패·구독 만료 시에도 계속 동작한다</td></tr>
+        <tr><td><b>Standard</b></td><td class="num">9,900원/월</td><td>15문장 전체 + 사용자 문장 추가 + 기본 프리셋 음성</td><td>사전 합성 구조상 문장 수·발화량은 원가와 거의 무관하다 — 가치 기반 가격</td></tr>
+        <tr><td><b>Voice</b></td><td class="num">19,900원/월</td><td>Standard + 본인·가족 음성 클로닝 프로필 + 보이스뱅킹 보관</td><td><b>지불 의사가 가장 높은 지점</b>이 여기다. 원가 차이는 <b>voice 슬롯</b>에서 생긴다 — 이 플랜 가입자 수가 ElevenLabs 플랜 등급을 결정한다(§12.2)</td></tr>
+        <tr><td><b>Care</b><span class="sm">요양기관 · 병원</span></td><td class="num">병상당 연 계약</td><td>다중 대상자 프로필, 관리 콘솔, 교육·설치 지원</td><td>고정비 바닥이 없어 소규모 기관부터 마진이 나온다. <b>B2B가 실질적 수익원</b></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>12.4 공공 보조금 경로</h3>
+    <div class="tw"><table>
+      <thead><tr><th>경로</th><th>현황</th><th>판단</th></tr></thead>
+      <tbody>
+        <tr><td><b>장애인보조기기 교부사업</b><span class="sm">보건복지부 · 지자체 · 복지로</span></td><td>의사소통보조기기 품목 포함. 음성출력장치·음성변환(TTS)장치 등이 확인됨</td><td><span class="tag warn">가장 현실적</span> 다만 <b>기기(하드웨어) 구매를 전제로 설계된 사업</b>이라 구독형 소프트웨어가 품목으로 인정될지 미확인. 품목 등재 협의가 필요하다. 단가·대상 자격은 매년 개정되므로 중앙보조기기센터 확인 필수</td></tr>
+        <tr><td><b>건강보험 보장구 급여</b></td><td>확인된 급여 품목은 전동휠체어·보청기·의지 등 이동·시청각 중심. 의사소통보조기기 포함 여부 미확인</td><td><span class="tag stop">단기 불가</span> 급여 등재는 장기 과제</td></tr>
+        <tr><td><b>ElevenLabs Impact Program 연계</b></td><td>ALS·MND <b>환자 개인</b>에게 파트너 비영리단체를 통해 음성 클로닝 무료 제공</td><td><span class="tag warn">제휴 협의 필요</span> 영리 서비스에 붙이는 연계는 프로그램 안내에 명시되어 있지 않다. 환자가 개인 자격으로 받은 혜택을 리보에서 쓸 수 있는지, 리보가 파트너가 될 수 있는지 ElevenLabs와 협의해야 한다. 성사되면 목소리 확보 비용을 환자 부담 없이 해결하는 경로다(§16 W22)</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">결제 자체는 국내 PG(토스페이먼츠·포트원 등)를 쓰고 구독 상태를 <code>subscriptions</code>에 웹훅으로 동기화한다. 대상자가 아니라 <b>보호자 계정</b>이 결제 주체라는 점이 청구·해지 UX 전체에 영향을 준다.</p>
+
+  </div>
+</section>
+
+<section id="s13">
+  <div class="sec-head"><span class="sec-num">13</span><h2>로드맵</h2></div>
+  <p class="sec-sub">고정 문장 트랙은 Stage 1에서 완성하고, 이후 단계는 자유 문장 트랙을 쌓는다. 자유 문장의 병목은 모델이 아니라 데이터이므로 수집은 Stage 1에 시작한다. 왕복은 발화 경로의 서버 왕복 수다.</p>
+  <div class="sec-body">
+
+    <div class="tw"><table>
+      <thead><tr><th>단계</th><th>범위</th><th>왕복</th><th>통과 조건</th></tr></thead>
+      <tbody>
+        <tr><td><b>Stage 1</b><span class="sm">본선 MVP</span></td><td>고정 문장 트랙(단말 인식 · 사전 합성) · Tier 0부터 점진 확장 · 이중 트리거 · 3경로 음성(ElevenLabs 클로닝) · 인식 방식 비교(DTW vs 소형 CNN) · <b>무성 발화 데이터 수집 시작</b>(§15)</td><td class="num">0회<span class="sm">고정 문장 · 로그 동기화는 별도</span></td><td>등록 문장 정확도 목표 달성 <b>그리고</b> 자연 상태 10분 오발화 0회. 둘 다 충족해야 통과. <b>실제 대상자 파일럿</b>으로 확인</td></tr>
+        <tr><td><b>Stage 2</b><span class="sm">시장 초기</span></td><td>입력 표현 확정(좌표 vs 입 영역 영상 · §15.3) · 공용 인코더 사전학습(AI Hub) → 무성 발화 파인튜닝 · 문장 추가 셀프서비스화 · 카카오 로그인 검토</td><td class="num">0회<span class="sm">고정 문장</span></td><td>평가 전용 화자 기준 <b>후보 3개 안 의도 문장 포함률</b> 내부 목표 달성</td></tr>
+        <tr><td><b>Stage 3</b><span class="sm">자유 문장 제한 베타</span></td><td>자유 문장 트랙 — 음소 인식 + 대화 맥락 + LLM 후보 3개 + 확인 후 발화 · 프리셋·본인 음성만</td><td class="num">2회<span class="sm">후보 생성 + 확인 후 합성</span></td><td>§14의 방어 설계가 <b>선행 조건</b>. 실제 대상자 기준 후보 3개 안 포함률과 확정까지 걸린 시간 목표 달성. 방어 설계 없이는 출시하지 않는다</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="flag ok">
+      <span class="mark">오프라인 범위</span>
+      <div><b>고정 문장 트랙은 완전 오프라인으로 동작한다.</b> 인식·판정·재생이 단말에서 끝나고 오디오를 미리 받아두기 때문에, 네트워크가 끊겨도 응급 4문장만이 아니라 <b>등록된 문장 전부</b>가 나간다. 오프라인에서 안 되는 것은 voice 등록, 문장 추가 후 재합성, 자유 문장 트랙, 로그 동기화다. 프로필을 바꾸면 재합성 오디오를 다 받을 때까지 이전 목소리로 나간다.</div>
+    </div>
+
+    <div class="note"><b>자체 호스팅 TTS 전환은 로드맵상 ‘원가·슬롯 최적화 옵션’이다.</b> 기능 단계가 아니다. 고정 문장 사전 합성은 배치라 서버리스 GPU로 돌릴 수 있으므로, W3 품질 벤치마크를 통과하면 슬롯 상한(660)에 닿기 전에 전환을 검토한다(§6.2 · §12.1). 자유 문장의 실시간 합성은 당분간 ElevenLabs에 남긴다.</div>
+
+  </div>
+</section>
+
+<section id="s14">
+  <div class="sec-head"><span class="sec-num">14</span><h2>자유 문장 — 후보 제시 · 확인 · 방어</h2></div>
+  <p class="sec-sub">자유 문장은 필수 목표다. 다만 받아쓰기로 정의하면 넘을 수 없으므로 <b>후보 제시 + 대화 맥락 + 확인</b>으로 정의하고, 무너지는 방어를 그 확인 구조로 대체한다. 이 절을 끝내기 전에는 자유 문장을 출시하지 않는다.</p>
+  <div class="sec-body">
+
+    <h3>14.1 기대치 — 받아쓰기로는 넘을 수 없다</h3>
+    <div class="tw"><table>
+      <thead><tr><th>기준</th><th>조건</th><th>성능</th></tr></thead>
+      <tbody>
+        <tr><td><b>영어 공개 최고 수준</b></td><td>LRS3 · 소리 낸 발화 · 입 영역 영상 입력 · 수천~수만 시간 학습</td><td class="num">WER 17~19%<span class="sm">VALLR 18.7% · 9만 시간 학습 17.0%</span></td></tr>
+        <tr><td><b>한국어 기준선</b><span class="sm">OLKAVS 논문</span></td><td>1,107명 · 화자 독립 · 입 영역 영상 입력 · Conformer</td><td class="num">CER 약 32%<span class="sm">정면 · 위 시점 41~46%</span></td></tr>
+        <tr><td><b>AI Hub 목표치</b></td><td>같은 데이터 · 전문가 화자 10% 평가</td><td class="num">CER 25% · WER 50%</td></tr>
+        <tr><td><b>리보 조건</b></td><td>한국어 · <b>무성 발화</b> · 고령 · 병상 각도 · 좌표 입력 가능성</td><td>위보다 불리 — 실측 전</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tcap">글자 3개 중 1개를 틀리는 수준에서는 인식 결과를 그대로 소리 내면 안 된다. 이것이 14.2 설계의 출발점이다.</p>
+
+    <h3>14.2 설계 — 후보 제시 + 대화 맥락 + 확인</h3>
+    <ol class="steps">
+      <li><b>구간 검출</b> — 고정 문장 트랙과 같은 단말 검출기를 쓴다. 어떤 구간을 자유 문장으로 넘길지는 미정이다(§16 W14).</li>
+      <li><b>음소열 인식</b> — 입 영역 데이터에서 음소(또는 비제메) 확률열을 낸다(C10). 음소 → LLM 구조는 VALLR 등 최근 연구와 같은 방향이다.</li>
+      <li><b>대화 맥락 결합</b> — 대화 상대(보호자·의료진)는 소리 내서 말하므로, 그 발화를 음성인식으로 받아 직전 대화 텍스트를 만든다(C11). “어디가 아파요?” 뒤의 입모양은 후보 공간이 크게 좁혀진다. <b>입모양만으로 부족한 정보를 맥락이 채운다.</b></li>
+      <li><b>후보 생성</b> — LLM이 음소열과 대화 맥락으로 후보 문장 3개를 만든다(C12).</li>
+      <li><b>확인</b> — 후보 3개를 크게 띄우고 대상자가 손 없이 고른다(같은 말 반복, 눈깜빡임·끄덕임 · §7.3). 고르지 않으면 폐기한다.</li>
+      <li><b>발화</b> — 확인된 후보만 서버가 발급한 <code>candidate_id</code>로 합성해 재생한다.</li>
+    </ol>
+    <div class="note"><b>지표는 단어 오류율이 아니다.</b> ① 후보 3개 안에 의도한 문장이 들어간 비율, ② 입이 멈춘 뒤 확정까지 걸린 시간. 둘 다 학습에 쓰지 않은 평가 전용 화자로 잰다(§15.2). 확인을 거쳐야 소리가 나므로 <b>자동 오발화가 구조적으로 없고</b>, 이 확인이 14.4의 방어를 겸한다.</div>
+
+    <h3>14.3 지금 공짜로 얻고 있는 것</h3>
+    <div class="note">고정 문장 트랙에서 합성 가능한 텍스트는 <b>등록된 문장뿐</b>이다. 사용자가 임의 텍스트를 입력할 경로 자체가 없으므로, “어머니 목소리로 아무 말이나 만들어 송금을 요청하는” 시나리오가 <b>기능이 아니라 구조로</b> 차단된다. AI기본법 대응도 기능 추가가 아니라 기존 설계로 충족된다. <b>이 방어는 자유 문장으로 가는 순간 통째로 사라진다.</b></div>
+
+    <h3>14.4 무엇으로 대체하는가</h3>
+    <div class="tw"><table>
+      <thead><tr><th>방어</th><th>내용</th><th>비용</th></tr></thead>
+      <tbody>
+        <tr><td><b>확인 후 발화</b></td><td>자유 문장은 인식이 끝나도 자동으로 소리 내지 않는다. 대상자가 후보를 골라야 합성한다. 오인식이 곧바로 소리가 되는 경로가 없다</td><td>발화까지 수 초 · 응급은 고정 문장 트랙이 맡으므로 감당 가능</td></tr>
+        <tr><td><b>입모양 기원 증명</b></td><td>합성 요청은 <b>실제 입술 좌표 시퀀스에서 유래한 텍스트로만</b> 받는다. 텍스트 필드로 직접 들어온 요청은 거부한다. 클로닝 목소리로 임의 문장을 만들려면 카메라 앞에서 그 문장을 실제로 입 모양으로 말해야 한다 — 공격 비용이 급격히 오른다</td><td>구현 난도 중 · 정직한 사용자에게 비용 없음</td></tr>
+        <tr><td><b>클로닝 음성 게이팅</b></td><td>자유 문장 모드에서는 <b>본인 음성 프로필과 프리셋만 허용</b>하고 가족 목소리는 등록 문장으로 제한한다. 사칭 피해가 가장 큰 조합(타인 목소리 × 임의 문장)을 금지</td><td>기능 축소 · 사용자 설명 필요</td></tr>
+        <tr><td><b>출력 워터마크</b></td><td>합성 오디오에 비가청 워터마크 또는 메타데이터 서명을 삽입. ElevenLabs 등 상용 API가 자체 출처표시를 넣는 경우가 있어 이를 활용하면 AI기본법 생성물 표시 의무 이행과 겸할 수 있다(약관 확인)</td><td>구현 난도 중 · 지연 소폭 증가</td></tr>
+        <tr><td><b>금융·신원 어휘 감시</b></td><td>계좌·송금·비밀번호·인증번호 등 특정 어휘를 포함한 자유 문장은 확신도 임계를 크게 올리고 화면 경고를 띄운다</td><td>오탐 가능 · 정당한 사용(“통장 좀 갖다줘”)을 막지 않도록 튜닝 필요</td></tr>
+        <tr><td><b>발화 로그 보존</b></td><td>자유 문장 모드에 한해 <b>텍스트와 시각</b>을 일정 기간 보존한다(오디오·좌표는 여전히 저장 안 함). 사고 발생 시 추적 수단</td><td>프라이버시와 정면으로 충돌 — <b>사용자에게 명시적으로 고지하고 동의를 받는다</b></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>14.5 기술적 제약</h3>
+    <div class="flag stop">
+      <span class="mark">자유 문장의 진짜 벽</span>
+      <div>자유 문장 VSR의 공개 모델·가중치는 사실상 전부 <b>LRS2/LRS3(BBC) 또는 비상업 라이선스</b>에 묶여 있다. Auto-AVSR도, AV-HuBERT도 상업 이용이 불가하다. 따라서 Stage 3의 경로는 셋 중 하나다 —<br>① <b>상업 이용 가능한 데이터로 처음부터 학습</b>(자체 수집 + AI Hub 립리딩 데이터 · §15), ② <b>LRS 라이선스 보유자와 상업 라이선스 협의</b>, ③ <b>음소 단위 자체 분류기 + 한국어 언어모델 디코딩</b>으로 우회. 세 경로 모두 데이터 확보가 병목이며, ③이 가장 현실적이다. <b>자유 문장의 비용은 모델이 아니라 데이터다.</b> AI Hub 립리딩 데이터는 영리 목적 연구·개발에 쓸 수 있어(§10) ①과 ③ 모두의 사전학습 기반이 된다.</div>
+    </div>
+
+  </div>
+</section>
+
+<section id="s15">
+  <div class="sec-head"><span class="sec-num">15</span><h2>데이터 전략</h2></div>
+  <p class="sec-sub">자유 문장의 비용은 모델이 아니라 데이터다. 사전학습은 공개 데이터로, 무성 발화 적응과 평가는 직접 모은 데이터로, 최종 검증은 실제 대상자로 한다.</p>
+  <div class="sec-body">
+
+    <h3>15.1 세 층</h3>
+    <div class="grid3">
+      <div class="card lift"><span class="k">사전학습</span><span class="h">AI Hub 립리딩 데이터</span><span class="d">1,107명 · 오디오 1,150시간 · 9개 시점 · FHD 30fps · 입술 바운딩박스. 화자 독립 공용 인코더의 기반이다. 다만 <b>소리 내어 말한 발화</b>이고, 60대 이상은 79명(7%)뿐이며, 병상 대화체가 아니다. 이용 조건은 §10.</span></div>
+      <div class="card"><span class="k">적응 · 평가</span><span class="h">지인 참여자</span><span class="d">무성 발화 파인튜닝과 내부 평가를 맡는다. 수십 시간이면 이 역할에는 충분하다. 수집 규칙은 15.2.</span></div>
+      <div class="card"><span class="k">최종 검증</span><span class="h">실제 대상자</span><span class="d">Stage 1 통과 조건(정확도·오발화)과 Stage 3 지표는 실제 대상자로만 확정한다. 환우회·병원 재활의학과를 통한 소수 파일럿 경로를 따로 확보한다(§16 W18).</span></div>
+    </div>
+
+    <h3>15.2 지인 참여자 수집 규칙</h3>
+    <ul class="plain">
+      <li><b>동의서 먼저.</b> 지인이라도 얼굴 일부 영상과 입술 좌표는 생체정보이고, 이 데이터로 만든 모델이 상업 제품에 들어간다. 수집 항목 · 상업 이용 · 보관 기간 · 철회 시 파기를 서면으로 받는다. 논문을 낼 계획이면 IRB 승인도 받는다.</li>
+      <li><b>같은 문장을 소리 내서 한 번, 소리 없이 한 번.</b> 무성 발화가 AI Hub(소리 낸 발화)와 얼마나 다른지 직접 잴 수 있고, 소리 낸 버전의 음성으로 무성 버전의 라벨과 타이밍을 맞출 수 있다.</li>
+      <li><b>병상 조건을 흉내 낸다.</b> 누운 자세, 얼굴보다 낮은 거치(§3.2), 어두운 조명을 섞는다.</li>
+      <li><b>60대 이상을 의도적으로 섞는다.</b> 부모님·조부모님 세대로 AI Hub의 고령층 부족을 메운다.</li>
+      <li><b>평가 전용 화자를 둔다.</b> 대략 10명은 학습에 절대 넣지 않는다. 같은 사람이 학습과 평가에 섞이면 정확도가 부풀려진다.</li>
+      <li><b>녹화 도구는 C8을 쓴다.</b> 수집과 온보딩 테스트가 한 번에 된다. 고정 문장 캘리브레이션 녹화도 같은 포맷으로 저장한다.</li>
+      <li><b>저장·학습은 국내에서.</b> AI Hub 데이터와 같은 파이프라인에서 돌리므로 해외 서버에 올리지 않는다.</li>
+    </ul>
+
+    <h3>15.3 첫 실험 — 입력 표현</h3>
+    <p>자유 문장 인식의 입력을 <b>입술 좌표</b>로 할지 <b>입 영역 영상</b>으로 할지는 이 제품의 프라이버시 구조와 성능 상한을 함께 정한다. 공개 최고 성능 모델들은 입 영역 영상을 입력으로 쓰고 좌표는 보조로만 쓴다. 좌표에는 치아·혀가 보이는지 같은 정보가 없고, 좌표로 저장한 데이터는 나중에 영상으로 되돌릴 수 없다.</p>
+    <ol class="steps">
+      <li>AI Hub 데이터의 같은 발화에서 MediaPipe 좌표와 입 영역 크롭 영상을 함께 만든다(바운딩박스 제공).</li>
+      <li>같은 화자 기준 분할로 좌표 모델과 영상 모델을 학습해 CER을 비교한다.</li>
+      <li>지인 무성 발화 평가셋에서 다시 비교한다.</li>
+      <li>차이가 작으면 좌표로 가서 “영상은 단말을 벗어나지 않는다”를 유지한다. 차이가 크면 입 영역 영상을 쓰되, 추론을 단말 WebGPU로 할 수 있는지 먼저 검토한다.</li>
+    </ol>
+    <div class="note">결론이 나기 전까지 연구 영상 동의자에게서는 <b>좌표와 입 영역 크롭 영상을 함께</b> 모은다. 나중에 영상이 필요하다고 판명되면 좌표만 모은 데이터는 쓸 수 없다(§16 W15).</div>
+
+  </div>
+</section>
+
+<section id="s16">
+  <div class="sec-head"><span class="sec-num">16</span><h2>아직 모르는 것</h2></div>
+  <p class="sec-sub">이 문서에서 추정으로 쓴 것들. 각 항목은 언제 확인되는지와 함께 적는다.</p>
+  <div class="sec-body">
+
+    <div class="tw"><table>
+      <thead><tr><th class="num">ID</th><th>항목</th><th>왜 중요한가</th><th>확인</th></tr></thead>
+      <tbody>
+        <tr><td class="num">W1</td><td><b>ElevenLabs 합성 지연</b></td><td>PoC의 6.03초는 CPU + XTTS-v2 실측이라 적용되지 않는다. ElevenLabs 스트리밍 첫 오디오를 0.3~0.7초로 추정하나 <b>미측정</b>. <b>자유 문장 트랙에서만</b> 해당 — 고정 문장은 사전 합성이라 발화 지연과 무관</td><td class="num">W1</td></tr>
+        <tr><td class="num">W2</td><td><b>한국에서 ElevenLabs까지의 왕복</b></td><td>서울·도쿄 리전 지원 여부·경로가 확인되지 않았다. 자유 문장 트랙 한정. 지연이 크면 저지연 모델을 고른다</td><td class="num">W1</td></tr>
+        <tr><td class="num">W3</td><td><b>ElevenLabs 한국어 클로닝 품질</b></td><td>라이선스·기능은 되지만 <b>한국어 + 저품질 참조 음성(통화 녹음·홈비디오)</b> 조건의 품질은 미검증. 같은 조건으로 오픈 웨이트(Qwen3-TTS · CosyVoice 2 등)도 벤치마크해 고정 문장 합성의 자체 호스팅 전환 기준으로 쓴다(§6.2)</td><td class="num">W2</td></tr>
+        <tr><td class="num">W4</td><td><b>오발화율</b></td><td>한 번도 측정한 적이 없다. 거절 방식(NONE 클래스 또는 템플릿 거리)과 임계값이 실제로 듣는지는 실측으로만 안다</td><td class="num">W4</td></tr>
+        <tr><td class="num">W5</td><td><b>비제메 충돌 실측</b></td><td>§7.3의 15문장은 설계 가설이다. “네/아니요”, “주세요” 계열 3문장의 실제 혼동률이 세트 구성을 바꿀 수 있다</td><td class="num">W4</td></tr>
+        <tr><td class="num">W6</td><td><b>구간 종료 대기 500 ms</b></td><td>지연의 최대 고정비. 줄이면 문장 중간의 짧은 멈춤을 종료로 오판한다</td><td class="num">W3</td></tr>
+        <tr><td class="num">W7</td><td><b>AI기본법 생성물 표시 이행 방식</b></td><td>응급 발화 앞에 안내음을 붙이면 제품이 망가진다. 화면 표시·설정 고지·메타데이터(또는 API 자체 워터마크)로 갈음 가능한지 <b>법률 검토 필요</b></td><td>출시 전</td></tr>
+        <tr><td class="num">W8</td><td><b>입술 좌표의 민감정보 해당성</b></td><td>PIPC 유권해석 미확보. 보수적으로 민감정보로 취급하되 사전 질의 권장</td><td>출시 전</td></tr>
+        <tr><td class="num">W9</td><td><b>AAC의 의료기기 해당 여부</b></td><td>식약처 공식 사례 미확인. 사전 상담 또는 비의료기기 확인 신청으로 확정</td><td>출시 전</td></tr>
+        <tr><td class="num">W10</td><td><b>보조기기 교부사업의 소프트웨어 인정</b></td><td>구독형 SW가 품목으로 인정되는지 미확인. 인정되면 결제 모델의 기반이 바뀐다</td><td>Stage 2</td></tr>
+        <tr><td class="num">W11</td><td><b>캘리브레이션 이탈률</b></td><td>18분 분할 녹화를 실제 환자·보호자가 끝까지 하는지. 이 하나로 온보딩 전체를 재설계해야 할 수도 있다</td><td class="num">W4</td></tr>
+        <tr><td class="num">W12</td><td><b>인식 방식 비교 · 단말 성능</b></td><td>DTW 템플릿과 소형 CNN 중 무엇이 정확도·오발화·필요 샘플 수에서 나은지(§4.3). 저가 태블릿에서 MediaPipe 30fps와 인식 시간이 나오는지도 함께</td><td class="num">W4</td></tr>
+        <tr><td class="num">W13</td><td><b>ElevenLabs 약관·단가</b></td><td>의료·보조 용도 허용 범위, 제3자(환자·가족·사망자) 음성 클로닝 동의 요건, 한국 처리·보관 위치, 실제 문자 단가, <b>voice 슬롯 상한(Pro 160 · Scale 660)과 월 voice 작업 한도, 660 초과 시 엔터프라이즈 조건</b> — 모두 계약 전 확인. $0.17/1,000자는 가격 페이지 기준 추정</td><td>출시 전</td></tr>
+        <tr><td class="num">W14</td><td><b>자유 문장 진입 방식</b></td><td>무조작 제약 아래에서 어떤 구간을 자유 문장 트랙으로 넘길지. 후보: 고정 문장에서 거절된 구간 전달, 상대가 말을 건 직후의 대화 창. 씹기·하품이 넘어가는 비율을 실측해야 한다(§5.4)</td><td>Stage 2</td></tr>
+        <tr><td class="num">W15</td><td><b>입력 표현</b></td><td>좌표 모델과 입 영역 영상 모델의 CER 차이. 프라이버시 구조를 바꿀 수 있는 결정(§15.3)</td><td>Stage 1</td></tr>
+        <tr><td class="num">W16</td><td><b>무성 발화 도메인 차이</b></td><td>소리 낸 발화로 사전학습한 인코더가 무성 발화에서 얼마나 떨어지고, 파인튜닝으로 얼마나 회복되는지</td><td>Stage 2</td></tr>
+        <tr><td class="num">W17</td><td><b>후보 3개 포함률</b></td><td>대화 맥락을 결합했을 때 실제로 얼마나 오르는지. 자유 문장 트랙의 성패 지표(§14.2)</td><td>Stage 2</td></tr>
+        <tr><td class="num">W18</td><td><b>실제 대상자 파일럿 경로</b></td><td>환우회·재활의학과 협조 가능 여부와 IRB 필요성(§15.1)</td><td>Stage 1</td></tr>
+        <tr><td class="num">W19</td><td><b>AI Hub 이용 조건 서면 확인</b></td><td>상업 제품용 모델 학습이 허용된다는 해석을 수행기관(마인즈랩)에 서면으로 확인. 해외 클라우드 사용이 국외 반출에 해당하는지도 함께(§10)</td><td>Stage 1</td></tr>
+        <tr><td class="num">W20</td><td><b>Liopa 청산 원인</b></td><td>같은 컨셉 선행 기업이 사업화에서 막힌 지점(§2)</td><td>Stage 1</td></tr>
+        <tr><td class="num">W21</td><td><b>대화 상대 음성 처리의 적법성</b></td><td>제3자 음성인식에 필요한 고지·동의 방식(§11.2)</td><td>출시 전</td></tr>
+        <tr><td class="num">W22</td><td><b>Impact Program 연계</b></td><td>영리 서비스와의 제휴 가능 여부(§12.4)</td><td>Stage 2</td></tr>
+      </tbody>
+    </table></div>
+
+  </div>
+</section>
+
+<section id="s17">
+  <div class="sec-head"><span class="sec-num">17</span><h2>출처</h2></div>
+  <p class="sec-sub">2026-09-15 기준 확인(v4 추가분 포함). 라이선스와 요금은 변한다 — 채택 확정 시점에 스냅샷을 따로 보관할 것.</p>
+  <div class="sec-body">
+    <div class="src">
+      <div class="src-row"><span class="t">ElevenLabs — 음성 클로닝</span><a href="https://elevenlabs.io/voice-cloning">elevenlabs.io/voice-cloning</a></div>
+      <div class="src-row"><span class="t">ElevenLabs — 요금</span><a href="https://elevenlabs.io/pricing">elevenlabs.io/pricing</a></div>
+      <div class="src-row"><span class="t">ElevenLabs — voice 슬롯 한도</span><a href="https://elevenlabs.io/docs/help-center/account/general/how-many-voice-slots-do-i-get-per-tier-and-how-can-i-increase-it">elevenlabs.io/docs — voice 슬롯 한도</a></div>
+      <div class="src-row"><span class="t">ElevenLabs — 스트리밍 TTS API</span><a href="https://elevenlabs.io/docs/api-reference/streaming">elevenlabs.io/docs/api-reference/streaming</a></div>
+      <div class="src-row"><span class="t">ElevenLabs Impact Program</span><a href="https://elevenlabs.io/blog/impact-program-announcement">elevenlabs.io/blog/impact-program-announcement</a></div>
+      <div class="src-row"><span class="t">Qwen3-TTS 모델 카드 (향후 후보)</span><a href="https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice">huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice</a></div>
+      <div class="src-row"><span class="t">CosyVoice 2 (향후 후보)</span><a href="https://huggingface.co/FunAudioLLM/CosyVoice2-0.5B">huggingface.co/FunAudioLLM/CosyVoice2-0.5B</a></div>
+      <div class="src-row"><span class="t">Chatterbox (향후 후보)</span><a href="https://huggingface.co/ResembleAI/chatterbox">huggingface.co/ResembleAI/chatterbox</a></div>
+      <div class="src-row"><span class="t">F5-TTS 가중치 상업이용 불가</span><a href="https://github.com/SWivid/F5-TTS/discussions/997">github.com/SWivid/F5-TTS/discussions/997</a></div>
+      <div class="src-row"><span class="t">AV-HuBERT 라이선스</span><a href="https://facebookresearch.github.io/av_hubert/">facebookresearch.github.io/av_hubert</a></div>
+      <div class="src-row"><span class="t">Auto-AVSR 가중치 조건</span><a href="https://github.com/mpc001/auto_avsr">github.com/mpc001/auto_avsr</a></div>
+      <div class="src-row"><span class="t">MediaPipe Face Landmarker (Web)</span><a href="https://developers.google.com/mediapipe/solutions/vision/face_landmarker/web_js">developers.google.com/mediapipe/solutions/vision/face_landmarker/web_js</a></div>
+      <div class="src-row"><span class="t">ONNX Runtime Web</span><a href="https://onnxruntime.ai/docs/tutorials/web/">onnxruntime.ai/docs/tutorials/web</a></div>
+      <div class="src-row"><span class="t">AI Hub 데이터 이용정책</span><a href="https://www.aihub.or.kr/intrcn/guid/usagepolicy.do?currMenu=151&amp;topMenu=105">aihub.or.kr — 이용정책</a></div>
+      <div class="src-row"><span class="t">AI Hub — 립리딩(입모양) 음성인식 데이터</span><a href="https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=538">aihub.or.kr — dataSetSn=538</a></div>
+      <div class="src-row"><span class="t">OLKAVS 논문 (시점별 립리딩 기준선)</span><a href="https://arxiv.org/html/2301.06375v2">arxiv.org/html/2301.06375v2</a></div>
+      <div class="src-row"><span class="t">VALLR — 음소 → LLM 립리딩</span><a href="https://arxiv.org/abs/2503.21408">arxiv.org/abs/2503.21408</a></div>
+      <div class="src-row"><span class="t">Liopa 청산 — Irish News</span><a href="https://www.irishnews.com/news/business/liquidator-appointed-to-belfast-lip-reading-technology-firm-liopa-WT4PUOU4VZBI3HSYDODEC3AOPU/">irishnews.com — Liopa 청산인 선임</a></div>
+      <div class="src-row"><span class="t">Liopa 청산 기록 — Companies House</span><a href="https://find-and-update.company-information.service.gov.uk/company/NI635074/insolvency">companies house — NI635074</a></div>
+      <div class="src-row"><span class="t">SRAVI 기관절개 환자 임상</span><a href="https://clinicaltrials.gov/study/NCT06027866">clinicaltrials.gov — NCT06027866</a></div>
+      <div class="src-row"><span class="t">Screen Wake Lock API</span><a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API">developer.mozilla.org — Screen Wake Lock API</a></div>
+      <div class="src-row"><span class="t">Vercel Functions 한도</span><a href="https://vercel.com/docs/functions/limitations">vercel.com/docs/functions/limitations</a></div>
+      <div class="src-row"><span class="t">Vercel Fluid Compute</span><a href="https://vercel.com/docs/fluid-compute">vercel.com/docs/fluid-compute</a></div>
+      <div class="src-row"><span class="t">Vercel — GPU는 지원 범위 밖</span><a href="https://vercel.com/i/what-is-serverless-gpu">vercel.com/i/what-is-serverless-gpu</a></div>
+      <div class="src-row"><span class="t">Vercel 리전 · 요금</span><a href="https://vercel.com/docs/functions/usage-and-pricing">vercel.com/docs/functions/usage-and-pricing</a></div>
+      <div class="src-row"><span class="t">Supabase 요금</span><a href="https://supabase.com/pricing">supabase.com/pricing</a></div>
+      <div class="src-row"><span class="t">Supabase Storage 파일 한도</span><a href="https://supabase.com/docs/guides/storage/uploads/file-limits">supabase.com/docs/guides/storage/uploads/file-limits</a></div>
+      <div class="src-row"><span class="t">Supabase Realtime</span><a href="https://supabase.com/docs/guides/realtime">supabase.com/docs/guides/realtime</a></div>
+      <div class="src-row"><span class="t">GPU 단가 · Modal (향후 참고)</span><a href="https://modal.com/pricing">modal.com/pricing</a></div>
+      <div class="src-row"><span class="t">GPU 단가 · RunPod (향후 참고)</span><a href="https://www.runpod.io/pricing">runpod.io/pricing</a></div>
+      <div class="src-row"><span class="t">AI기본법 사업자 의무</span><a href="https://datalaw.kr/posts/ai-basic-law-business-duties/">datalaw.kr — AI기본법 사업자 의무</a></div>
+      <div class="src-row"><span class="t">고영향 AI 판단기준</span><a href="https://www.bkl.co.kr/law/insight/newsletter/6245">bkl.co.kr — 뉴스레터 6245</a></div>
+      <div class="src-row"><span class="t">개인정보보호법 AI 특례 개정</span><a href="https://www.lawtimes.co.kr/news/articleView.html?idxno=226126">lawtimes.co.kr — 226126</a></div>
+      <div class="src-row"><span class="t">디지털의료기기SW 가이드라인 해설</span><a href="https://www.shinkim.com/kor/media/newsletter/2828">shinkim.com — 뉴스레터 2828</a></div>
+      <div class="src-row"><span class="t">장애인보조기기 교부 품목</span><a href="https://knat.go.kr/knw/home/knat_DB/assist_detail.php?assist_biz_idx=1">knat.go.kr — 보조기기 지원사업</a></div>
+      <div class="src-row"><span class="t">EU AI Act 제50조 투명성</span><a href="https://artificialintelligenceact.eu/transparency-rules-article-50/">artificialintelligenceact.eu — Article 50</a></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>리보 · LIVO — 안지현 · 송의현 · 차준호 · 최한울</span>
+  <span>v4 · 2026-09-15 · 두 트랙 구조 · 발화 경로 단말화 · 데이터 전략 추가</span>
+</footer>
+
+</main>
+</div>
+</div>
+
+<script>
+(function(){
+  // ---- TOC ----
+  var titles = {s1:"확정된 네 가지",s2:"제품 정의와 경계",s3:"사용자 흐름",s4:"트리거 이중 모드",s5:"시스템 아키텍처",s6:"목소리 파이프라인",s7:"문장 세트",s8:"데이터 모델",s9:"컴포넌트와 API",s10:"라이선스 매트릭스",s11:"법 · 규제",s12:"결제 모델과 원가",s13:"로드맵",s14:"자유 문장",s15:"데이터 전략",s16:"아직 모르는 것",s17:"출처"};
+  var toc = document.getElementById('toc');
+  var secs = [].slice.call(document.querySelectorAll('section[id]'));
+  secs.forEach(function(s,i){
+    var li=document.createElement('li'), a=document.createElement('a');
+    a.href='#'+s.id;
+    a.innerHTML='<span class="n">'+String(i+1).padStart(2,'0')+'</span><span>'+titles[s.id]+'</span>';
+    li.appendChild(a); toc.appendChild(li);
+  });
+  var links = [].slice.call(toc.querySelectorAll('a'));
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){
+          var id = e.target.id;
+          links.forEach(function(l){ l.classList.toggle('on', l.getAttribute('href')==='#'+id); });
+        }
+      });
+    },{rootMargin:'-10% 0px -75% 0px'});
+    secs.forEach(function(s){io.observe(s);});
+  }
+
+  // ---- license filter ----
+  var chips = [].slice.call(document.querySelectorAll('.ctl-bar .chip'));
+  var rows = [].slice.call(document.querySelectorAll('#lic tbody tr'));
+  chips.forEach(function(c){
+    c.addEventListener('click', function(){
+      chips.forEach(function(x){x.setAttribute('aria-pressed', String(x===c));});
+      var f = c.dataset.f;
+      rows.forEach(function(r){ r.classList.toggle('hide', f!=='all' && r.dataset.s!==f); });
+    });
+  });
+
+  // ---- cost calculator (plan + voice slot model) ----
+  var ACTIVE_PHRASES=15, AVG_CHARS=7, VOICE_REGEN=2;      // 고정 문장 사전 합성 ≈ 210자/인·월
+  var FREE_CHARS=15;                                      // 자유 문장 1건 평균 글자 수(추정)
+  var PRICE_1K=0.17, INFRA=45, FX=1350;                   // $/1000자(포함 크레딧 무시), Vercel Pro + Supabase Pro $/월, 환율
+  var VAT=1.1, PG_FEE=0.03;                               // 구독료는 부가세 포함가, PG 수수료율
+  var PLANS=[{name:'Pro',slots:160,usd:99},{name:'Scale',slots:660,usd:299},{name:'엔터프라이즈',slots:Infinity,usd:990}];
+  var u=document.getElementById('u'), n=document.getElementById('n'), p=document.getElementById('p');
+  var won=function(v){return '₩'+Math.round(v).toLocaleString('ko-KR');};
+  function planFor(U){ for(var i=0;i<PLANS.length;i++){ if(U<=PLANS[i].slots) return PLANS[i]; } }
+  function monthly(U,F,P){
+    var pl=planFor(U);                                    // 슬롯 수 = 대상자 수(전원 voice 유지 가정)
+    var chars=U*(ACTIVE_PHRASES*AVG_CHARS*VOICE_REGEN + F*FREE_CHARS);
+    var cost=(INFRA+pl.usd+chars/1000*PRICE_1K)*FX;
+    var rev=U*P/VAT*(1-PG_FEE);
+    return {pl:pl, chars:chars, cost:cost, rev:rev, margin:rev-cost};
+  }
+  function calc(){
+    var U=+u.value, F=+n.value, P=+p.value;
+    var r=monthly(U,F,P);
+    var be=0;
+    for(var k=1;P>0&&k<=20000;k++){ if(monthly(k,F,P).margin>=0){ be=k; break; } }
+    document.getElementById('uv').textContent=U.toLocaleString('ko-KR')+'명';
+    document.getElementById('nv').textContent=F.toLocaleString('ko-KR')+'건';
+    document.getElementById('pv').textContent=P.toLocaleString('ko-KR')+'원';
+    document.getElementById('r-slot').textContent=U.toLocaleString('ko-KR')+'개 · '+r.pl.name+(r.pl.slots===Infinity?'':'('+r.pl.slots+')');
+    document.getElementById('r-billed').textContent=r.chars.toLocaleString('ko-KR')+'자';
+    document.getElementById('r-plan').textContent=won(r.pl.usd*FX)+(r.pl.slots===Infinity?' · 별도 계약':'');
+    document.getElementById('r-cost').textContent=won(r.cost);
+    document.getElementById('r-unit').textContent=won(r.cost/U);
+    document.getElementById('r-rev').textContent=won(r.rev);
+    var m=document.getElementById('r-margin');
+    m.textContent=(r.margin>=0?'+':'−')+won(Math.abs(r.margin));
+    m.style.color = r.margin>=0 ? 'var(--ok)' : 'var(--stop)';
+    document.getElementById('r-be').textContent = be>0 ? be.toLocaleString('ko-KR')+'명' : '—';
+  }
+  [u,n,p].forEach(function(el){el.addEventListener('input',calc);});
+  calc();
+})();
+</script>
+
+</body>
+</html>
