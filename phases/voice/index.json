@@ -151,7 +151,8 @@
       "name": "voice-preset-routes",
       "status": "completed",
       "summary": "src/services/voice-preset-api.ts(server-only · handleListPresets → 200 {presets: [{key, label, gender, age_band, preview_url}]} + Cache-Control no-store, listVoicePresets 결과를 snake_case로만 바꿈 · handleSelectPreset(subjectId, body) → parseUuid 후 selectVoicePreset(presetKey: body.preset_key) → 200 {preset_key} — 권한·키·완성 검사는 voice-preset.ts, 오류는 핸들러 안에서 errorResponse) + voice-preset-api.test.ts 10개(메모리 store + ElevenLabs 호출 시 실패하는 fake tts — 목록: 완성 프리셋만·snake_case·no-store·본문에 PRESET_VOICE_IDS 값과 voice_id 키 없음·전부 미완성이면 빈 목록 / 선택: 200 저장 · 잘못된 uuid 400 · 없는 키·비문자열·키 없음·한 문장 빠짐·오디오 없음 400 저장 안 함 · 남의 대상자 403) · 라우트 2개(runtime nodejs): api/voice-presets(GET, 파라미터 없어도 빌드상 ƒ — Next 14는 ≥400 응답을 정적으로 굳히지 않고 env 있으면 cookies()로 동적) · api/subjects/[subject_id]/voice-preset(PUT, readJsonObject → 핸들러, catch errorResponse) · docs/ARCHITECTURE.md: API 표 2행 · 데이터 흐름 [프리셋 목소리 · 팔레트] + 무료 플랜 클로닝·Voice Design 차단 → 프리셋 6개 사전 합성, /api/voice-profile은 유료 전환·자체 호스팅용 · subjects에 voice_preset(null = 기본, 번들이 읽을 때 검증), 130줄 · 총 224개 통과",
-      "started_at": "2026-09-19T17:58:16+0900"
+      "started_at": "2026-09-19T17:58:16+0900",
+      "completed_at": "2026-09-19T18:03:48+0900"
     }
   ],
   "created_at": "2026-09-19T15:33:07+0900"
