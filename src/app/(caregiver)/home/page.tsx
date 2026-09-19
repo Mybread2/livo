@@ -169,6 +169,19 @@ export default async function HomePage() {
               >
                 대상자 화면 열기
               </Link>
+              <Link
+                href={`/settings?subject=${s.id}`}
+                style={{
+                  fontSize: 13,
+                  color: "#6d707a",
+                  border: "1px solid rgba(21,22,26,0.13)",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  textDecoration: "none",
+                }}
+              >
+                설정
+              </Link>
             </div>
           </div>
         ))
