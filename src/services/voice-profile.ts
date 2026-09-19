@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { PHRASES } from "@/lib/phrases";
+import { PHRASES, type PhraseId } from "@/lib/phrases";
 import type { ElevenLabs } from "./elevenlabs";
 import { precomputeProfileAudio, profileAudioPath } from "./precompute";
 import type { ConsentKind, VoiceSource, VoiceStore } from "./voice-store";
@@ -26,6 +26,19 @@ export class ConsentRequiredError extends Error {
     super(`동의가 필요하다: ${missing.join(", ")}`);
     this.name = "ConsentRequiredError";
     this.missing = missing;
+  }
+}
+
+// 프로필은 저장됐지만 사전 합성이 중간에 멈췄다. profileId로 resumePrecompute를 부르면 남은 문장만 합성한다.
+export class PrecomputeIncompleteError extends Error {
+  profileId: string;
+  cause: unknown;
+
+  constructor(profileId: string, cause: unknown) {
+    super(`사전 합성이 끝나지 않았다: ${profileId}`);
+    this.name = "PrecomputeIncompleteError";
+    this.profileId = profileId;
+    this.cause = cause;
   }
 }
 
@@ -112,11 +125,38 @@ export async function registerVoiceProfile(
     await store.clearRefAudioPath(profileId);
   }
 
-  await precomputeProfileAudio({ store, tts }, { subjectId, voiceProfileId: profileId, voiceId });
+  try {
+    await precomputeProfileAudio({ store, tts }, { subjectId, voiceProfileId: profileId, voiceId });
+  } catch (err) {
+    // 프로필과 클론은 지우지 않는다 — 이미 합성된 문장을 버리지 않고 resumePrecompute로 나머지만 합성한다
+    throw new PrecomputeIncompleteError(profileId, err);
+  }
 
   const previewUrl = await store.signedAudioUrl(
     profileAudioPath(subjectId, profileId, PHRASES[0].id),
     PREVIEW_URL_EXPIRES_SEC,
   );
   return { profile_id: profileId, voice_id: voiceId, preview_url: previewUrl };
+}
+
+// PrecomputeIncompleteError 뒤의 재시도. 합성 대상은 항상 PHRASES 전체이고, 이미 있는 문장은 건너뛴다.
+// 합성은 클로닝 목소리로 해외 API를 부르는 일이라 등록 때의 동의가 지금도 유효해야 한다.
+export async function resumePrecompute(
+  deps: { store: VoiceStore; tts: Pick<ElevenLabs, "synthesizePhrase"> },
+  input: { userId: string; subjectId: string; voiceProfileId: string },
+): Promise<{ synthesized: PhraseId[]; skipped: PhraseId[] }> {
+  const { store, tts } = deps;
+  const { userId, subjectId, voiceProfileId } = input;
+  await assertOwnsSubject(store, userId, subjectId);
+  const profile = await store.getVoiceProfile(voiceProfileId);
+  if (!profile || profile.subjectId !== subjectId) throw new ForbiddenError();
+
+  // 다른 음성 동의가 있어도 이 프로필에 연결된 동의가 철회됐으면 합성하지 않는다
+  const consents = await store.listActiveConsents(subjectId);
+  const missing: ConsentKind[] = [];
+  if (!consents.some((c) => c.id === profile.consentId)) missing.push(VOICE_CONSENT[profile.source]);
+  if (!consents.some((c) => c.kind === "overseas_transfer")) missing.push("overseas_transfer");
+  if (missing.length > 0) throw new ConsentRequiredError(missing);
+
+  return precomputeProfileAudio({ store, tts }, { subjectId, voiceProfileId, voiceId: profile.providerVoiceId });
 }

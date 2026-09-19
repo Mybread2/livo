@@ -93,7 +93,9 @@
     {
       "step": 11,
       "name": "precompute-resume",
-      "status": "pending"
+      "status": "completed",
+      "summary": "src/services/voice-profile.ts에 PrecomputeIncompleteError(profileId, cause) — registerVoiceProfile의 precomputeProfileAudio 실패 시 던짐(클론·저장·원본 파기 동작 불변, 프로필·voice 삭제 안 함) · resumePrecompute({store, tts}, {userId, subjectId, voiceProfileId}) — ownsSubject 아니면 ForbiddenError → 프로필 없거나 subjectId 다르면 ForbiddenError → 프로필 consentId와 overseas_transfer가 활성 동의에 없으면 ConsentRequiredError(missing, 합성 0회) → precomputeProfileAudio(providerVoiceId) 결과 그대로(입력에 문장·텍스트 없음) + voice-profile.test.ts 6개(3번째 문장 실패 → profileId·2행 · 재시도 skipped 2/synthesized 3·5행 · 완료 프로필 전부 skipped·합성 0회 · voice_self/overseas_transfer 철회 → ConsentRequired · 남의 대상자/다른 대상자 프로필/없는 프로필 → Forbidden)",
+      "started_at": "2026-09-19T16:37:55+0900"
     },
     {
       "step": 12,

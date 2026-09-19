@@ -7,7 +7,9 @@ import {
   ConsentRequiredError,
   createRefAudioUpload,
   ForbiddenError,
+  PrecomputeIncompleteError,
   registerVoiceProfile,
+  resumePrecompute,
   type VoiceSource,
 } from "./voice-profile";
 import type { ConsentKind } from "./voice-store";
@@ -39,6 +41,22 @@ function setup(kinds: ConsentKind[]) {
 
 function input(subjectId: string, refAudioPath: string, source: VoiceSource = "self", userId = OWNER) {
   return { userId, subjectId, source, refAudioPath };
+}
+
+const SYNTH_FAILURE = new Error("합성 실패");
+
+// 등록 중 3번째 문장 합성이 실패해 2문장만 저장된 프로필을 만든다
+async function registerIncomplete() {
+  const ctx = setup(["voice_self", "overseas_transfer"]);
+  const synthesize = ctx.tts.synthesizePhrase.getMockImplementation()!;
+  ctx.tts.synthesizePhrase.mockImplementation(async (phraseId, voiceId) => {
+    if (phraseId === PHRASES[2].id) throw SYNTH_FAILURE;
+    return synthesize(phraseId, voiceId);
+  });
+  const err = await registerVoiceProfile({ store: ctx.store, tts: ctx.tts }, input(ctx.subjectId, ctx.refAudioPath)).catch(
+    (e) => e,
+  );
+  return { ...ctx, err };
 }
 
 describe("registerVoiceProfile", () => {
@@ -200,6 +218,82 @@ describe("registerVoiceProfile", () => {
     tts.deleteVoice.mockRejectedValue(new Error("delete 실패"));
 
     await expect(registerVoiceProfile({ store, tts }, input(subjectId, refAudioPath))).rejects.toThrow("insert 실패");
+  });
+
+  it("사전 합성이 3번째 문장에서 실패하면 PrecomputeIncompleteError(profileId) — 프로필·클론·합성된 2문장은 남긴다", async () => {
+    const { store, tts, refAudioPath, err } = await registerIncomplete();
+
+    expect(err).toBeInstanceOf(PrecomputeIncompleteError);
+    expect(err.profileId).toBe(store.profiles[0].id);
+    expect(err.cause).toBe(SYNTH_FAILURE);
+    expect(store.rows.filter((r) => r.voiceProfileId === err.profileId)).toHaveLength(2);
+    expect(store.profiles).toHaveLength(1);
+    expect(tts.deleteVoice).not.toHaveBeenCalled();
+    expect(store.refs.has(refAudioPath)).toBe(false);
+  });
+});
+
+describe("resumePrecompute", () => {
+  it("남은 문장만 합성한다 — skipped 2개 · synthesized 3개, phrase_audio 5행", async () => {
+    const { store, subjectId, err } = await registerIncomplete();
+    const tts = fakeTts();
+
+    const result = await resumePrecompute(
+      { store, tts },
+      { userId: OWNER, subjectId, voiceProfileId: err.profileId },
+    );
+
+    const ids = PHRASES.map((p) => p.id);
+    expect(result).toEqual({ skipped: ids.slice(0, 2), synthesized: ids.slice(2) });
+    expect(store.rows.filter((r) => r.voiceProfileId === err.profileId)).toHaveLength(PHRASES.length);
+    expect(tts.synthesizePhrase).toHaveBeenCalledTimes(3);
+    expect(tts.synthesizePhrase.mock.calls.every(([, voiceId]) => voiceId === "cloned_v")).toBe(true);
+  });
+
+  it("다 된 프로필이면 전부 skipped, 합성 0회", async () => {
+    const { store, tts: registerTts, subjectId, refAudioPath } = setup(["voice_self", "overseas_transfer"]);
+    const { profile_id } = await registerVoiceProfile({ store, tts: registerTts }, input(subjectId, refAudioPath));
+    const tts = fakeTts();
+
+    const result = await resumePrecompute({ store, tts }, { userId: OWNER, subjectId, voiceProfileId: profile_id });
+
+    expect(result).toEqual({ skipped: PHRASES.map((p) => p.id), synthesized: [] });
+    expect(tts.synthesizePhrase).not.toHaveBeenCalled();
+  });
+
+  it.each(["voice_self", "overseas_transfer"] as const)(
+    "%s가 철회됐으면 ConsentRequiredError, 합성 0회",
+    async (kind) => {
+      const { store, subjectId, consentIds, err: incomplete } = await registerIncomplete();
+      await store.revokeConsent(consentIds.get(kind)!, new Date());
+      const tts = fakeTts();
+
+      const err = await resumePrecompute(
+        { store, tts },
+        { userId: OWNER, subjectId, voiceProfileId: incomplete.profileId },
+      ).catch((e) => e);
+
+      expect(err).toBeInstanceOf(ConsentRequiredError);
+      expect(err.missing).toEqual([kind]);
+      expect(tts.synthesizePhrase).not.toHaveBeenCalled();
+      expect(store.rows).toHaveLength(2);
+    },
+  );
+
+  it("남의 대상자, 다른 대상자의 프로필 id, 없는 프로필 id → ForbiddenError, 합성 0회", async () => {
+    const { store, subjectId, err } = await registerIncomplete();
+    const otherSubject = store.seedSubject(OTHER_USER);
+    const tts = fakeTts();
+
+    for (const call of [
+      { userId: OTHER_USER, subjectId, voiceProfileId: err.profileId },
+      { userId: OTHER_USER, subjectId: otherSubject, voiceProfileId: err.profileId },
+      { userId: OWNER, subjectId, voiceProfileId: "missing-profile" },
+    ]) {
+      await expect(resumePrecompute({ store, tts }, call)).rejects.toBeInstanceOf(ForbiddenError);
+    }
+    expect(tts.synthesizePhrase).not.toHaveBeenCalled();
+    expect(store.rows).toHaveLength(2);
   });
 });
 
