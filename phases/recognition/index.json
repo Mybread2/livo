@@ -15,7 +15,8 @@
       "name": "dtw-nearest",
       "status": "completed",
       "started_at": "2026-09-19T17:46:08+0900",
-      "summary": "src/recognition/dtw.ts(C4 거리: frameDistance 유클리드 + dtwDistance Sakoe-Chiba 폭 DTW[기본 DEFAULT_BAND 8, 실제 폭 max(band, |n−m|), 두 행 메모리, 누적 비용 ÷ (n+m), 빈 시퀀스·행 길이≠80·band 음수/NaN은 throw] + nearestPhrases 1-NN[문장별 템플릿 최소 거리, label·d1·d2·distances, 빈 템플릿 무시·전부 없으면 null, 동점은 키 순서]) + 합성 sin 시퀀스 테스트 23개(0·대칭·손계산 표·시간 왜곡·모양 구분·폭 제한·길이 차·throw·1-NN 6조건). 거리→점수·거절 기준은 미구현(뒤 step)"
+      "summary": "src/recognition/dtw.ts(C4 거리: frameDistance 유클리드 + dtwDistance Sakoe-Chiba 폭 DTW[기본 DEFAULT_BAND 8, 실제 폭 max(band, |n−m|), 두 행 메모리, 누적 비용 ÷ (n+m), 빈 시퀀스·행 길이≠80·band 음수/NaN은 throw] + nearestPhrases 1-NN[문장별 템플릿 최소 거리, label·d1·d2·distances, 빈 템플릿 무시·전부 없으면 null, 동점은 키 순서]) + 합성 sin 시퀀스 테스트 23개(0·대칭·손계산 표·시간 왜곡·모양 구분·폭 제한·길이 차·throw·1-NN 6조건). 거리→점수·거절 기준은 미구현(뒤 step)",
+      "completed_at": "2026-09-19T17:51:55+0900"
     }
   ],
   "created_at": "2026-09-19T17:33:22+0900",
