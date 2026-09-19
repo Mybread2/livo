@@ -56,7 +56,7 @@
       "status": "completed",
       "started_at": "2026-09-19T19:22:25+0900",
       "summary": "src/recognition/score.ts(C4 거리→점수: ScoreParams{rejectDistance·ratioOffset} + DEFAULT_SCORE_PARAMS 동결 {0.2·1.5}(실제 녹화 5단어×3회 분석값) + scoreNearest[규칙 순서: d1 비유한·d1 > rejectDistance → 거절 score 0 / d2 비유한(비교 문장 없음) → 거절 score 0 / d2 ≤ 0(d1=d2=0) → 거절 아님 score 0 / 그 밖 clamp(ratioOffset − d1/d2, 0, 1), label 그대로, params는 준 값만(undefined는 기본값), 비유한·rejectDistance<0은 RangeError]) + 테스트 25개(기본값·경계 0.6→0.9·0.8→0.7·0.5→1·1.0→0.5·하한·decideGate 연결 speak/show/discard/수동 0.65·실제 분석 수치 4사례[틀린 2개 discard]·거절 5종·d1=d2=0·params 덮기/undefined/0/RangeError·동결). gate.ts 임계값·앞 step 파일 무변경",
-      "completed_at": "2026-09-19T19:24:20+0900"
+      "completed_at": "2026-09-19T19:25:37+0900"
     },
     {
       "step": 7,
