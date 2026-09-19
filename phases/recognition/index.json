@@ -41,6 +41,13 @@
       "started_at": "2026-09-19T19:04:54+0900",
       "summary": "src/recognition/landmarker.ts(C1 브라우저 부분: MEDIAPIPE_WASM_BASE '/mediapipe/wasm'·FACE_LANDMARKER_MODEL_PATH '/mediapipe/face_landmarker.task' 같은 출처 상수 + createLipLandmarker[@mediapipe/tasks-vision 동적 import → FilesetResolver.forVisionTasks → FaceLandmarker VIDEO·numFaces 1·blendshape/행렬 끔, 기본 GPU·throw 시 CPU로 1회 재시도] + LipLandmarker.detect[엄격 증가 아닌·비유한 timestamp와 readyState<2는 추론 없이 null, 첫 얼굴 점을 {x,y} 새 객체로 복사, 얼굴 없으면 null] · close[한 번만, 이후 detect null]) + @mediapipe/tasks-vision ^1.0.1 의존성 + scripts/copy-mediapipe-wasm.mjs(postinstall: WASM 4개 → public/mediapipe/wasm/, 반복 실행 동일·원본 없으면 exit 1) + .gitignore public/mediapipe/wasm/ + face_landmarker.task(sha256 고정) 커밋 + NOTICE.txt(출처·Apache-2.0·sha256) + Node 테스트 4개(입술 40점 = FACE_LANDMARKS_LIPS 고유 점·경로 상수 CDN 금지·모델 크기). 실제 WASM·카메라 동작은 미검증(다음 step 수집 페이지)",
       "completed_at": "2026-09-19T19:11:54+0900"
+    },
+    {
+      "step": 5,
+      "name": "template-store",
+      "status": "completed",
+      "started_at": "2026-09-19T19:12:34+0900",
+      "summary": "src/offline/templateStore.ts(TemplateFile v1 {version·createdAt·seqFrames 32·featureDim 80·templates 문장 id→number[][][]} + encodeTemplates[빈 문장 제외, Float32Array 행 → 일반 배열, createdAt = now ISO] + decodeTemplates[객체·version 1·seqFrames/featureDim 상수 일치·isPhraseId·배열·행 32×값 80·값은 Float32로 옮겨도 유한(1e39 거절)·희소 배열 칸 거절·빈 문장은 빼고 전체 0개면 오류 → TemplateFormatError, 행은 Float32Array, 키 순서 보존] + IndexedDB 'ipmoa-recognition' v1 · store 'templates' · 키 'current'[saveTemplates 덮어쓰기·IndexedDB 없으면 throw / loadTemplates 없음·IndexedDB 없음·깨짐(console.warn)은 null / clearTemplates IndexedDB 없으면 no-op, 트랜잭션 complete 뒤 resolve]) + 합성 sin 시퀀스 테스트 42개(encode 4·왕복/키 순서·빈 문장·형식 오류 24종·비객체 입력 5종·Node 환경 저장소 4종 + 저장 전 검증 3종). 명세 외 1곳(검수 필요): saveTemplates가 쓰기 전에 decodeTemplates로 검증해 되읽을 수 없는 세트(0개·모르는 id·행 수 불일치)는 TemplateFormatError로 거절한다(안 하면 이전 저장본을 덮어쓴 뒤 load가 null). 실제 IndexedDB 동작은 미검증(다음 step 개발용 페이지)"
     }
   ],
   "created_at": "2026-09-19T17:33:22+0900",
