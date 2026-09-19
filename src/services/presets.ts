@@ -7,11 +7,11 @@ import type { VoicePresetKey } from "@/lib/voice-presets";
 // 합성이 끝난 목소리는 무료 슬롯을 비우려 웹에서 지워도 된다 (이미 올라간 문장은 다시 합성하지 않는다).
 // voice_id는 비밀은 아니지만 단말·번들로 내보내지 않는다.
 export const PRESET_VOICE_IDS: Record<VoicePresetKey, string | null> = {
-  "male-30s": null,
+  "male-30s": "iX4YMgw8xlSLT3Wlh5Bo",
   "male-50s": "ld4WnBGjZkAYMoRQz6p9",
-  "male-70s": null,
-  "female-30s": null,
-  "female-50s": null,
+  "male-70s": "eihUtSAV68b73AgYGjGn",
+  "female-30s": "SwKzuouP1DzLtddQPYAs",
+  "female-50s": "LrQNdzc28JKUeqjQOFvI",
   "female-70s": null,
 };
 
