@@ -15,6 +15,11 @@ export interface MemoryVoiceProfile extends Omit<NewVoiceProfile, "refAudioPath"
   createdAt: string;
 }
 
+// 노출한 배열을 테스트가 들고 있으므로 제자리에서 지운다
+function removeWhere<T>(list: T[], match: (item: T) => boolean): void {
+  for (let i = list.length - 1; i >= 0; i--) if (match(list[i])) list.splice(i, 1);
+}
+
 // 테스트 전용 VoiceStore. 저장소 상태(audio·rows·refs·profiles)를 그대로 노출하고, 계정·대상자·동의 시드 헬퍼를 둔다.
 export function createMemoryVoiceStore() {
   const audio = new Map<string, ArrayBuffer>(); // phrase-audio bucket
@@ -91,6 +96,45 @@ export function createMemoryVoiceStore() {
     async signedAudioUrl(path, expiresInSec) {
       if (!audio.has(path)) throw new Error(`오디오 없음: ${path}`);
       return `memory://phrase-audio/${path}?expiresIn=${expiresInSec}`;
+    },
+
+    async getVoiceProfile(id) {
+      const p = profiles.find((x) => x.id === id);
+      if (!p) return null;
+      const { subjectId, source, providerVoiceId, consentId, refAudioPath } = p;
+      return { id, subjectId, source, providerVoiceId, consentId, refAudioPath };
+    },
+
+    async getConsent(id) {
+      const c = consents.find((x) => x.id === id);
+      return c ? { id, subjectId: c.subjectId, kind: c.kind, revokedAt: c.revokedAt } : null;
+    },
+
+    async revokeConsent(id, at) {
+      const consent = consents.find((c) => c.id === id);
+      if (consent && consent.revokedAt === null) consent.revokedAt = at.toISOString();
+    },
+
+    async deleteAudio(paths) {
+      for (const path of paths) audio.delete(path);
+    },
+
+    async listRefs(subjectId) {
+      return [...refs.keys()].filter((path) => path.startsWith(`${subjectId}/`));
+    },
+
+    // phrase_audio는 FK cascade
+    async deleteVoiceProfile(id) {
+      removeWhere(profiles, (p) => p.id === id);
+      removeWhere(rows, (r) => r.voiceProfileId === id);
+    },
+
+    // consents·voice_profiles·phrase_audio는 FK cascade. Storage(audio·refs)는 DB cascade로 지워지지 않는다
+    async deleteSubject(subjectId) {
+      subjectOwners.delete(subjectId);
+      removeWhere(consents, (c) => c.subjectId === subjectId);
+      removeWhere(profiles, (p) => p.subjectId === subjectId);
+      removeWhere(rows, (r) => r.subjectId === subjectId);
     },
   };
 

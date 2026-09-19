@@ -85,7 +85,9 @@
     {
       "step": 10,
       "name": "voice-purge",
-      "status": "pending"
+      "status": "completed",
+      "summary": "VoiceStore에 getVoiceProfile·getConsent·revokeConsent(revoked_at null일 때만)·deleteAudio(phrase-audio, 빈 배열 no-op)·listRefs(voice-refs '{subjectId}/' 100개씩 페이지)·deleteVoiceProfile·deleteSubject(FK cascade) 추가(Supabase + 메모리, 메모리는 cascade 흉내·Storage는 남김) · src/services/purge.ts(server-only · purgeVoiceProfile — 없으면 no-op → deleteVoice(ElevenLabsError 404만 무시) → listPhraseAudio 경로 deleteAudio → refAudioPath 있으면 deleteRef → 마지막에 행 삭제, 멱등 · revokeConsent — 없는/남의 동의 ForbiddenError(쓰기 0) → 파기 전 철회 기록 → voice_self/family는 그 동의의 프로필, overseas_transfer는 전부 purge, voice_retention은 listRefs 전부 deleteRef + 전 프로필 clearRefAudioPath, 그 외는 기록만, 재호출 시 파기 재수행 → {purgedProfileIds} · deleteSubject — 소유 확인 → 프로필 전부 purge → 등록 안 된 업로드 포함 참조 음성 전부 삭제 → 마지막에 대상자 행 삭제) + purge.test.ts 14개",
+      "started_at": "2026-09-19T16:33:09+0900"
     },
     {
       "step": 11,

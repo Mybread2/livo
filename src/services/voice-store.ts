@@ -4,6 +4,7 @@ import { isPhraseId, type PhraseId } from "@/lib/phrases";
 
 const AUDIO_BUCKET = "phrase-audio";
 const REF_BUCKET = "voice-refs";
+const LIST_PAGE_SIZE = 100;
 
 // consents.kind check 제약과 같다
 export type ConsentKind =
@@ -52,6 +53,24 @@ export interface VoiceStore {
   ): Promise<{ id: string; source: VoiceSource; createdAt: string; consentId: string }[]>;
   clearRefAudioPath(voiceProfileId: string): Promise<void>;
   signedAudioUrl(path: string, expiresInSec: number): Promise<string>;
+  getVoiceProfile(id: string): Promise<{
+    id: string;
+    subjectId: string;
+    source: VoiceSource;
+    providerVoiceId: string;
+    consentId: string;
+    refAudioPath: string | null;
+  } | null>;
+  getConsent(id: string): Promise<{ id: string; subjectId: string; kind: ConsentKind; revokedAt: string | null } | null>;
+  // revoked_at이 null일 때만 설정한다 — 최초 철회 시각을 덮어쓰지 않는다
+  revokeConsent(id: string, at: Date): Promise<void>;
+  deleteAudio(paths: string[]): Promise<void>;
+  // voice-refs bucket의 '{subjectId}/' 아래 전부 (등록되지 않은 업로드 포함)
+  listRefs(subjectId: string): Promise<string[]>;
+  // phrase_audio 행은 FK cascade
+  deleteVoiceProfile(id: string): Promise<void>;
+  // consents·voice_profiles·phrase_audio 행은 FK cascade. Storage 파일과 ElevenLabs voice는 남는다
+  deleteSubject(subjectId: string): Promise<void>;
 }
 
 // admin은 service_role 클라이언트여야 한다. voice_profiles·phrase_audio 쓰기와 두 bucket 접근에 정책이 없다 (RLS로 막혀 있다).
@@ -172,6 +191,73 @@ export function createSupabaseVoiceStore(admin: SupabaseClient): VoiceStore {
       const { data, error } = await admin.storage.from(AUDIO_BUCKET).createSignedUrl(path, expiresInSec);
       if (error) throw new Error(`오디오 서명 URL 발급 실패: ${error.message}`);
       return data.signedUrl;
+    },
+
+    async getVoiceProfile(id) {
+      const { data, error } = await admin
+        .from("voice_profiles")
+        .select("id, subject_id, source, provider_voice_id, consent_id, ref_audio_path")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw new Error(`voice_profiles 조회 실패: ${error.message}`);
+      if (!data) return null;
+      return {
+        id: data.id,
+        subjectId: data.subject_id,
+        source: data.source,
+        providerVoiceId: data.provider_voice_id,
+        consentId: data.consent_id,
+        refAudioPath: data.ref_audio_path,
+      };
+    },
+
+    async getConsent(id) {
+      const { data, error } = await admin
+        .from("consents")
+        .select("id, subject_id, kind, revoked_at")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw new Error(`동의 조회 실패: ${error.message}`);
+      if (!data) return null;
+      return { id: data.id, subjectId: data.subject_id, kind: data.kind, revokedAt: data.revoked_at };
+    },
+
+    async revokeConsent(id, at) {
+      const { error } = await admin
+        .from("consents")
+        .update({ revoked_at: at.toISOString() })
+        .eq("id", id)
+        .is("revoked_at", null);
+      if (error) throw new Error(`동의 철회 실패: ${error.message}`);
+    },
+
+    async deleteAudio(paths) {
+      if (paths.length === 0) return;
+      const { error } = await admin.storage.from(AUDIO_BUCKET).remove(paths);
+      if (error) throw new Error(`오디오 삭제 실패: ${error.message}`);
+    },
+
+    // 참조 음성 경로는 '{subjectId}/{uuid}' 한 단계다 (createRefAudioUpload)
+    async listRefs(subjectId) {
+      const paths: string[] = [];
+      for (let offset = 0; ; offset += LIST_PAGE_SIZE) {
+        const { data, error } = await admin.storage
+          .from(REF_BUCKET)
+          .list(subjectId, { limit: LIST_PAGE_SIZE, offset, sortBy: { column: "name", order: "asc" } });
+        if (error) throw new Error(`참조 음성 목록 조회 실패: ${error.message}`);
+        paths.push(...data.map((f) => `${subjectId}/${f.name}`));
+        if (data.length < LIST_PAGE_SIZE) return paths;
+      }
+    },
+
+    async deleteVoiceProfile(id) {
+      const { error } = await admin.from("voice_profiles").delete().eq("id", id);
+      if (error) throw new Error(`voice_profiles 삭제 실패: ${error.message}`);
+    },
+
+    async deleteSubject(subjectId) {
+      const { error } = await admin.from("subjects").delete().eq("id", subjectId);
+      if (error) throw new Error(`대상자 삭제 실패: ${error.message}`);
     },
   };
 }
