@@ -122,11 +122,40 @@ export default async function HomePage() {
               border: "1px solid rgba(21,22,26,0.13)",
               borderRadius: 10,
               padding: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
             }}
           >
             <div style={{ fontWeight: 600, fontSize: 15 }}>{s.displayName} 님</div>
-            <div style={{ color: "#5c5f67", fontSize: 13 }}>
-              온보딩 · 문장 · 목소리는 아래에서 설정합니다
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Link
+                href={`/voice?subject=${s.id}`}
+                style={{
+                  fontSize: 13,
+                  color: "#2A52BE",
+                  border: "1px solid rgba(42,82,190,0.4)",
+                  background: "rgba(42,82,190,0.06)",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  textDecoration: "none",
+                }}
+              >
+                목소리 설정
+              </Link>
+              <Link
+                href={`/subject?subject=${s.id}`}
+                style={{
+                  fontSize: 13,
+                  color: "#fff",
+                  background: "#0a0a0c",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  textDecoration: "none",
+                }}
+              >
+                대상자 화면 열기
+              </Link>
             </div>
           </div>
         ))
@@ -166,21 +195,6 @@ export default async function HomePage() {
 
       <Link href="/phrases" style={{ ...btn, background: "#2A52BE", color: "#fff", marginTop: 6 }}>
         문장 관리
-      </Link>
-      <Link
-        href="/voice"
-        style={{
-          ...btn,
-          background: "rgba(42,82,190,0.06)",
-          color: "#2A52BE",
-          border: "1px solid rgba(42,82,190,0.4)",
-        }}
-      >
-        목소리 설정
-      </Link>
-
-      <Link href="/subject" style={{ ...btn, background: "#0a0a0c", color: "#fff", marginTop: 6 }}>
-        대상자 화면 열기
       </Link>
     </main>
   );
