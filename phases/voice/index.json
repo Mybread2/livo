@@ -103,7 +103,8 @@
       "name": "preset-script",
       "status": "completed",
       "summary": "scripts/preset-env.ts(REQUIRED_ENV 4개 · missingEnv(env) — 빈 문자열도 없음 취급, 이름만 반환, 부작용 없음) + preset-env.test.ts 5개 · scripts/precompute-presets.ts(인자 없음 — missingEnv 있으면 이름만 stderr·exit 1(네트워크 0회) → service role createClient(persistSession false) → createSupabaseVoiceStore·createElevenLabs() → PRESET_KEYS마다 precomputePresetAudio → 완료 출력, 실패 시 exit 1) · package.json precompute:presets = tsx --conditions=react-server --env-file-if-exists=.env.local (tsx devDep, 플래그 전달·@/ alias·빈 환경변수가 env 파일보다 우선함을 실측) · eslint.config.mjs에서 scripts/ 무시 제거",
-      "started_at": "2026-09-19T16:40:10+0900"
+      "started_at": "2026-09-19T16:40:10+0900",
+      "completed_at": "2026-09-19T16:43:28+0900"
     }
   ],
   "created_at": "2026-09-19T15:33:07+0900"
