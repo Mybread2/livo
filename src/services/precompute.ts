@@ -1,7 +1,8 @@
 import "server-only";
 import { PHRASES, type PhraseId } from "@/lib/phrases";
+import type { VoicePresetKey } from "@/lib/voice-presets";
 import type { ElevenLabs } from "./elevenlabs";
-import { getPresetVoiceId, presetAudioPath, type PresetKey } from "./presets";
+import { getPresetVoiceId, presetAudioPath, presetAudioPrefix } from "./presets";
 import type { VoiceStore } from "./voice-store";
 
 type Tts = Pick<ElevenLabs, "synthesizePhrase">;
@@ -39,13 +40,35 @@ export async function precomputeProfileAudio(
 }
 
 // 프리셋 오디오는 phrase_audio에 넣지 않는다 (voice_profile_id NOT NULL, 프리셋은 voice_profiles 밖). 업로드만 한다.
+// 이미 올라간 문장은 건너뛴다 — 팀은 합성 후 웹에서 목소리를 지우므로, 다시 돌려도 호출이 0회여야 한다.
+// 합성할 문장이 남았는데 voice_id가 없으면(아직 안 만든 목소리) throw한다. 순차 처리는 precomputeProfileAudio와 같은 이유.
 export async function precomputePresetAudio(
-  deps: { store: Pick<VoiceStore, "putAudio">; tts: Tts },
-  presetKey: PresetKey,
-): Promise<void> {
+  deps: { store: Pick<VoiceStore, "putAudio" | "listAudio">; tts: Tts },
+  presetKey: VoicePresetKey,
+): Promise<{ synthesized: PhraseId[]; skipped: PhraseId[] }> {
+  const { store, tts } = deps;
+  const existing = new Set(await store.listAudio(presetAudioPrefix(presetKey)));
   const voiceId = getPresetVoiceId(presetKey);
+  const synthesized: PhraseId[] = [];
+  const skipped: PhraseId[] = [];
+
   for (const { id } of PHRASES) {
-    const { audio } = await deps.tts.synthesizePhrase(id, voiceId);
-    await deps.store.putAudio(presetAudioPath(presetKey, id), audio);
+    const path = presetAudioPath(presetKey, id);
+    if (existing.has(path)) {
+      skipped.push(id);
+      continue;
+    }
+    if (voiceId === null) throw new Error(`프리셋 ${presetKey}의 voice_id가 없다 (PRESET_VOICE_IDS)`);
+    const { audio } = await tts.synthesizePhrase(id, voiceId);
+    await store.putAudio(path, audio);
+    synthesized.push(id);
   }
+
+  return { synthesized, skipped };
+}
+
+// 모든 등록 문장의 프리셋 오디오가 올라가 있는지
+export async function isPresetComplete(store: Pick<VoiceStore, "listAudio">, key: VoicePresetKey): Promise<boolean> {
+  const existing = new Set(await store.listAudio(presetAudioPrefix(key)));
+  return PHRASES.every(({ id }) => existing.has(presetAudioPath(key, id)));
 }

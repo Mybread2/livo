@@ -3,13 +3,12 @@ import { missingEnv, REQUIRED_ENV } from "./preset-env";
 
 const full = {
   ELEVENLABS_API_KEY: "k",
-  ELEVENLABS_PRESET_VOICE_ID: "v",
   NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
   SUPABASE_SERVICE_ROLE_KEY: "s",
 };
 
 describe("missingEnv", () => {
-  it("필요한 변수 4개를 요구한다", () => {
+  it("필요한 변수 3개를 요구한다 — 프리셋 voice_id는 환경변수가 아니다", () => {
     expect([...REQUIRED_ENV].sort()).toEqual(Object.keys(full).sort());
   });
 
@@ -18,13 +17,13 @@ describe("missingEnv", () => {
   });
 
   it("없는 변수의 이름을 돌려준다", () => {
-    const env = { ELEVENLABS_PRESET_VOICE_ID: "v", NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co" };
+    const env = { NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co" };
     expect(missingEnv(env)).toEqual(["ELEVENLABS_API_KEY", "SUPABASE_SERVICE_ROLE_KEY"]);
   });
 
   it("빈 문자열도 없는 것으로 본다", () => {
-    expect(missingEnv({ ...full, ELEVENLABS_PRESET_VOICE_ID: "", NEXT_PUBLIC_SUPABASE_URL: "" })).toEqual([
-      "ELEVENLABS_PRESET_VOICE_ID",
+    expect(missingEnv({ ...full, ELEVENLABS_API_KEY: "", NEXT_PUBLIC_SUPABASE_URL: "" })).toEqual([
+      "ELEVENLABS_API_KEY",
       "NEXT_PUBLIC_SUPABASE_URL",
     ]);
   });
