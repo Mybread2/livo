@@ -12,8 +12,13 @@ type ChosenVoice = Pick<VoiceBundle, "version" | "source"> & { paths: { phraseId
 
 // 최신 프로필부터 보고, 모든 등록 문장의 오디오가 있는 첫 프로필을 고른다. 최신 프로필이 아직 사전 합성 중이면
 // 이전 목소리를 준다 — 교체 중에도 발화가 끊기지 않게. 부분 완료 프로필은 내보내지 않는다(일부 문장만 소리가 난다).
+// 동의가 살아 있는 프로필만 후보다 — 철회 후 파기가 실패해 오디오가 남아 있어도 그 목소리는 나가지 않는다.
+// 클로닝 목소리는 해외 API에서 만든 것이라 overseas_transfer 동의도 살아 있어야 한다.
 async function chooseVoice(store: VoiceStore, subjectId: string): Promise<ChosenVoice> {
-  for (const { id, source } of await store.listVoiceProfiles(subjectId)) {
+  const consents = await store.listActiveConsents(subjectId);
+  const profiles = consents.some((c) => c.kind === "overseas_transfer") ? await store.listVoiceProfiles(subjectId) : [];
+  for (const { id, source, consentId } of profiles) {
+    if (!consents.some((c) => c.id === consentId)) continue;
     const rows = await store.listPhraseAudio(id);
     const paths = PHRASES.flatMap(({ id: phraseId }) => {
       const row = rows.find((r) => r.phraseId === phraseId);

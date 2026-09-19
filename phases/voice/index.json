@@ -77,7 +77,9 @@
     {
       "step": 9,
       "name": "bundle-consent-guard",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-19T16:30:52+0900",
+      "summary": "VoiceStore.listVoiceProfiles 반환에 consentId 추가(Supabase consent_id + 메모리) · getBundle의 chooseVoice가 listActiveConsents를 대상자당 1회 조회해 철회되지 않은 overseas_transfer가 없으면 프로필 후보 없음, 프로필 consentId가 활성 동의에 없으면 건너뜀 → 조건 맞는 완성 프로필 없으면 프리셋(에러 없음) · bundle.test.ts setup에 overseas_transfer 시드 + 테스트 3개(음성 동의 철회 → 프리셋 · 최신 철회 + 이전 유효 → 이전, 동의 조회 1회 · overseas_transfer 철회 → 프리셋), 기존 7개는 동의 유효 회귀로 유지"
     },
     {
       "step": 10,

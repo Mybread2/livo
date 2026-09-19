@@ -14,12 +14,13 @@ const ALL = PHRASES.map((p) => p.id);
 const OLDER = "2026-09-01T00:00:00.000Z";
 const NEWER = "2026-09-10T00:00:00.000Z";
 
-// 대상자 1명 + 프리셋 오디오(전역 자산이라 늘 올라가 있다)
+// 대상자 1명 + 국외이전 동의 + 프리셋 오디오(전역 자산이라 늘 올라가 있다)
 function setup() {
   const store = createMemoryVoiceStore();
   const subjectId = store.seedSubject(OWNER);
+  const overseasConsentId = store.seedConsent(subjectId, "overseas_transfer");
   for (const id of ALL) store.audio.set(presetAudioPath("default", id), new ArrayBuffer(1));
-  return { store, subjectId };
+  return { store, subjectId, overseasConsentId };
 }
 
 // phraseIds까지 사전 합성이 끝난 프로필
@@ -46,6 +47,23 @@ function urlOf(path: string, expiresInSec = 3600): string {
 
 function profileItems(subjectId: string, profileId: string) {
   return ALL.map((id) => ({ phraseId: id, url: urlOf(profileAudioPath(subjectId, profileId, id)) }));
+}
+
+function presetItems() {
+  return ALL.map((id) => ({ phraseId: id, url: urlOf(presetAudioPath("default", id)) }));
+}
+
+function consentOf(store: MemoryStore, profileId: string): string {
+  const profile = store.profiles.find((p) => p.id === profileId);
+  if (!profile) throw new Error(`프로필 없음: ${profileId}`);
+  return profile.consentId;
+}
+
+// revoked_at만 채운다 — 파기가 아직 안 됐거나 실패해서 오디오·phrase_audio가 그대로 남은 상태
+function revoke(store: MemoryStore, consentId: string): void {
+  const consent = store.consents.find((c) => c.id === consentId);
+  if (!consent) throw new Error(`동의 없음: ${consentId}`);
+  consent.revokedAt = "2026-09-15T00:00:00.000Z";
 }
 
 describe("getBundle", () => {
@@ -108,6 +126,45 @@ describe("getBundle", () => {
 
     expect(bundle.version).toBe("preset:default");
     expect(bundle.source).toBe("preset");
+  });
+
+  it("완성된 프로필의 음성 동의가 철회됐으면 오디오가 남아 있어도 프리셋", async () => {
+    const { store, subjectId } = setup();
+    const profileId = await seedProfile(store, subjectId, "family", OLDER, ALL);
+    revoke(store, consentOf(store, profileId));
+
+    const bundle = await getBundle({ store }, { userId: OWNER, subjectId });
+
+    expect(bundle.version).toBe("preset:default");
+    expect(bundle.source).toBe("preset");
+    expect(bundle.items).toEqual(presetItems());
+  });
+
+  it("최신 프로필의 동의가 철회됐으면 동의가 유효한 이전의 완성된 프로필 — 동의 조회는 한 번만", async () => {
+    const { store, subjectId } = setup();
+    const older = await seedProfile(store, subjectId, "family", OLDER, ALL);
+    const newer = await seedProfile(store, subjectId, "self", NEWER, ALL);
+    revoke(store, consentOf(store, newer));
+    const listConsents = vi.spyOn(store, "listActiveConsents");
+
+    const bundle = await getBundle({ store }, { userId: OWNER, subjectId });
+
+    expect(bundle.version).toBe(older);
+    expect(bundle.source).toBe("family");
+    expect(bundle.items).toEqual(profileItems(subjectId, older));
+    expect(listConsents.mock.calls).toEqual([[subjectId]]);
+  });
+
+  it("overseas_transfer가 철회됐으면 음성 동의가 유효한 완성된 프로필이 있어도 프리셋", async () => {
+    const { store, subjectId, overseasConsentId } = setup();
+    await seedProfile(store, subjectId, "self", OLDER, ALL);
+    revoke(store, overseasConsentId);
+
+    const bundle = await getBundle({ store }, { userId: OWNER, subjectId });
+
+    expect(bundle.version).toBe("preset:default");
+    expect(bundle.source).toBe("preset");
+    expect(bundle.items).toEqual(presetItems());
   });
 
   it("남의 대상자면 ForbiddenError, 서명 URL은 발급하지 않는다", async () => {

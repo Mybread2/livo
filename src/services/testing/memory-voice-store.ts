@@ -80,7 +80,7 @@ export function createMemoryVoiceStore() {
       return profiles
         .filter((p) => p.subjectId === subjectId)
         .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
-        .map(({ id, source, createdAt }) => ({ id, source, createdAt }));
+        .map(({ id, source, createdAt, consentId }) => ({ id, source, createdAt, consentId }));
     },
 
     async clearRefAudioPath(voiceProfileId) {
