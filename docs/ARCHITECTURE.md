@@ -74,10 +74,17 @@ public/                 # PWA manifest, service worker
   → ElevenLabs voice 등록 → 고정 문장 전체 사전 합성 → Storage
   → 단말이 GET /api/bundle/:subject_id 로 내려받음
 
+[프리셋 목소리 · 팔레트]
+팀이 ElevenLabs 웹에서 성별·연령대 프리셋 6개 생성 → npm run precompute:presets → Storage presets/{key}/
+  → 보호자가 GET /api/voice-presets 로 미리듣기 → PUT /api/subjects/:subject_id/voice-preset
+  → 번들 목소리: 동의가 살아 있는 완성 프로필 → 대상자가 고른 프리셋 → 기본 프리셋(male-50s)
+
 [자유 문장 · Stage 3]
 C2 구간 → C10 음소열 + C11 대화 맥락 → POST /api/free-utterance → C12 후보 3개
   → 대상자 확인(반복·눈깜빡임·끄덕임) → POST /api/free-utterance/confirm → 스트리밍 재생
 ```
+
+- 무료 플랜에서는 클로닝·Voice Design API가 막혀 있어, 성별·연령대 프리셋 6개를 웹에서 만들어 사전 합성하고 대상자별로 고른다. 클로닝 경로(`/api/voice-profile`)는 유료 전환 또는 자체 호스팅 모델용으로 남아 있다.
 
 ## API
 | 메서드 · 경로 | 요청 | 응답 | 비고 |
@@ -87,6 +94,8 @@ C2 구간 → C10 음소열 + C11 대화 맥락 → POST /api/free-utterance →
 | `POST /api/voice-profile/upload-url` | subject_id, source | `{path, signed_url, token}` | 참조 음성 업로드용 서명 URL (private bucket) |
 | `POST /api/voice-profile` | subject_id, source, ref_audio_path | `{profile_id, voice_id, preview_url}` | 등록 → 미리듣기 → 고정 문장 사전 합성. 동의는 서버가 찾는다 |
 | `POST /api/voice-profile/:profile_id/precompute` | subject_id | `{synthesized, skipped}` | 사전 합성이 중간에 실패했을 때(502) 남은 문장만 재시도 |
+| `GET /api/voice-presets` | — | `{presets: [{key, label, gender, age_band, preview_url}]}` | 사전 합성이 끝난 프리셋만. 미리듣기 서명 URL이라 `no-store`, voice_id 없음 |
+| `PUT /api/subjects/:subject_id/voice-preset` | preset_key | `{preset_key}` | 팔레트에 없거나 합성이 덜 된 키는 400 |
 | `POST /api/train` | subject_id | `{job_id}` | CNN 방식일 때만. 완료는 Supabase Realtime |
 | `GET /api/bundle/:subject_id` | — | `{voice, recognizer}` | 오프라인 발화에 필요한 것을 내려받음. 서명 URL이라 `no-store`, voice_id 없음 |
 | `POST /api/consents/:consent_id/revoke` | — | `{purged_profile_ids}` | 철회·대상자 삭제는 목소리 파기(ElevenLabs·Storage)를 동반해야 해서 RLS로 막고 이 서버 경로만 둔다 |
@@ -99,7 +108,7 @@ C2 구간 → C10 음소열 + C11 대화 맥락 → POST /api/free-utterance →
 |--------|----------|------|
 | `auth.users` | id, email, provider | Google OAuth 단독 |
 | `accounts` | user_id, plan, billing_customer_id, org_id | 결제·플랜 귀속 단위 |
-| `subjects` | id, account_id, display_name, birth_year, sex, condition, trigger_mode | 계정 1 : 대상자 N |
+| `subjects` | id, account_id, display_name, birth_year, sex, condition, trigger_mode, voice_preset | 계정 1 : 대상자 N. `voice_preset`은 팔레트 키(null = 기본 프리셋) — 번들이 읽을 때 검증 |
 | `consents` | subject_id, kind, granted_by, granted_at, revoked_at, doc_version, evidence | kind = biometric / voice_self / voice_family / research_use / overseas_transfer / research_video / voice_retention. `granted_by`로 본인·법정대리인·가족 구분 |
 | `phrases` | id, text, tier, is_global, account_id | 전역 15문장 + 사용자 추가 |
 | `subject_phrases` | subject_id, phrase_id, class_index(CNN만), enabled, sample_count, accuracy | 대상자별 활성 문장 |

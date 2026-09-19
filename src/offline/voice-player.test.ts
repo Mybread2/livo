@@ -78,7 +78,7 @@ function createFakeOutput({ hold = false } = {}) {
 async function setup(options: { caches?: CacheStorage; version?: string; failing?: Set<string>; hold?: boolean } = {}) {
   const memory = createMemoryCaches();
   const cache = options.caches ?? memory.caches;
-  const fetchBundle = vi.fn(async () => bundleOf(options.version ?? "preset:default"));
+  const fetchBundle = vi.fn(async () => bundleOf(options.version ?? "preset:male-50s"));
   const fetch = createFakeFetch(options.failing);
   const { output, plays } = createFakeOutput({ hold: options.hold });
   const player = await createVoicePlayer({ fetchBundle, fetch, cache, output });
@@ -105,7 +105,7 @@ describe("createVoicePlayer", () => {
 
     for (const id of ALL) expect(player.isReady(id)).toBe(true);
     await player.speak("pain");
-    expect(await played(plays)).toEqual(["preset:default/pain"]);
+    expect(await played(plays)).toEqual(["preset:male-50s/pain"]);
   });
 
   it("speak는 fetch·fetchBundle을 호출하지 않는다", async () => {
@@ -128,7 +128,7 @@ describe("createVoicePlayer", () => {
 
     for (const id of ALL) expect(second.player.isReady(id)).toBe(true);
     await second.player.speak("water");
-    expect(await played(second.plays)).toEqual(["preset:default/water"]);
+    expect(await played(second.plays)).toEqual(["preset:male-50s/water"]);
     expect(second.fetchBundle).not.toHaveBeenCalled();
     expect(second.fetch).not.toHaveBeenCalled();
   });
@@ -147,7 +147,7 @@ describe("createVoicePlayer", () => {
   it("같은 버전이라도 빠진 문장이 있으면 다시 내려받는다", async () => {
     const first = await setup();
     await first.player.sync();
-    first.remove("/livo-voice/preset:default/water");
+    first.remove("/livo-voice/preset:male-50s/water");
 
     const second = await setup({ caches: first.cache });
     expect(second.player.isReady("water")).toBe(false);
@@ -205,6 +205,6 @@ describe("speak", () => {
 
     await first; // 멈춘 재생은 끝난 것으로 처리된다
     expect(plays.map((p) => p.stopped)).toEqual([true, false]);
-    expect(await played(plays)).toEqual(["preset:default/pain", "preset:default/water"]);
+    expect(await played(plays)).toEqual(["preset:male-50s/pain", "preset:male-50s/water"]);
   });
 });

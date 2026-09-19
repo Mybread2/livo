@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { PHRASES, type PhraseId } from "@/lib/phrases";
+import type { VoicePresetKey } from "@/lib/voice-presets";
 import { getBundle } from "./bundle";
 import { profileAudioPath } from "./precompute";
 import { presetAudioPath } from "./presets";
@@ -19,8 +20,13 @@ function setup() {
   const store = createMemoryVoiceStore();
   const subjectId = store.seedSubject(OWNER);
   const overseasConsentId = store.seedConsent(subjectId, "overseas_transfer");
-  for (const id of ALL) store.audio.set(presetAudioPath("default", id), new ArrayBuffer(1));
+  for (const id of ALL) store.audio.set(presetAudioPath("male-50s", id), new ArrayBuffer(1));
   return { store, subjectId, overseasConsentId };
+}
+
+// phraseIds까지 프리셋 오디오가 올라간 상태
+function seedPreset(store: MemoryStore, key: VoicePresetKey, phraseIds: readonly PhraseId[] = ALL): void {
+  for (const id of phraseIds) store.audio.set(presetAudioPath(key, id), new ArrayBuffer(1));
 }
 
 // phraseIds까지 사전 합성이 끝난 프로필
@@ -49,8 +55,8 @@ function profileItems(subjectId: string, profileId: string) {
   return ALL.map((id) => ({ phraseId: id, url: urlOf(profileAudioPath(subjectId, profileId, id)) }));
 }
 
-function presetItems() {
-  return ALL.map((id) => ({ phraseId: id, url: urlOf(presetAudioPath("default", id)) }));
+function presetItems(key: VoicePresetKey = "male-50s") {
+  return ALL.map((id) => ({ phraseId: id, url: urlOf(presetAudioPath(key, id)) }));
 }
 
 function consentOf(store: MemoryStore, profileId: string): string {
@@ -67,16 +73,16 @@ function revoke(store: MemoryStore, consentId: string): void {
 }
 
 describe("getBundle", () => {
-  it("프로필이 없으면 프리셋 번들: 5문장 전부 presets/default/ 경로, 기본 만료 3600초", async () => {
+  it("프로필이 없으면 프리셋 번들: 전 문장 presets/male-50s/ 경로, 기본 만료 3600초", async () => {
     const { store, subjectId } = setup();
     const signed = vi.spyOn(store, "signedAudioUrl");
 
     const bundle = await getBundle({ store }, { userId: OWNER, subjectId });
 
-    expect(bundle.version).toBe("preset:default");
+    expect(bundle.version).toBe("preset:male-50s");
     expect(bundle.source).toBe("preset");
-    expect(signed.mock.calls).toEqual(ALL.map((id) => [presetAudioPath("default", id), 3600]));
-    expect(bundle.items).toEqual(ALL.map((id) => ({ phraseId: id, url: urlOf(presetAudioPath("default", id)) })));
+    expect(signed.mock.calls).toEqual(ALL.map((id) => [presetAudioPath("male-50s", id), 3600]));
+    expect(bundle.items).toEqual(ALL.map((id) => ({ phraseId: id, url: urlOf(presetAudioPath("male-50s", id)) })));
   });
 
   it("완성된 프로필 1개면 그 프로필: version은 프로필 id, source는 프로필 source, voice_id는 없다", async () => {
@@ -124,7 +130,7 @@ describe("getBundle", () => {
 
     const bundle = await getBundle({ store }, { userId: OWNER, subjectId });
 
-    expect(bundle.version).toBe("preset:default");
+    expect(bundle.version).toBe("preset:male-50s");
     expect(bundle.source).toBe("preset");
   });
 
@@ -135,7 +141,7 @@ describe("getBundle", () => {
 
     const bundle = await getBundle({ store }, { userId: OWNER, subjectId });
 
-    expect(bundle.version).toBe("preset:default");
+    expect(bundle.version).toBe("preset:male-50s");
     expect(bundle.source).toBe("preset");
     expect(bundle.items).toEqual(presetItems());
   });
@@ -162,9 +168,51 @@ describe("getBundle", () => {
 
     const bundle = await getBundle({ store }, { userId: OWNER, subjectId });
 
-    expect(bundle.version).toBe("preset:default");
+    expect(bundle.version).toBe("preset:male-50s");
     expect(bundle.source).toBe("preset");
     expect(bundle.items).toEqual(presetItems());
+  });
+
+  it("대상자가 고른 프리셋이 완성돼 있으면 그 프리셋: version은 preset:{key}", async () => {
+    const { store, subjectId } = setup();
+    seedPreset(store, "female-70s");
+    await store.setSubjectVoicePreset(subjectId, "female-70s");
+
+    const bundle = await getBundle({ store }, { userId: OWNER, subjectId });
+
+    expect(bundle.version).toBe("preset:female-70s");
+    expect(bundle.source).toBe("preset");
+    expect(bundle.items).toEqual(presetItems("female-70s"));
+  });
+
+  // 클라이언트가 subjects 행을 직접 고칠 수 있다 — 응급 발화가 나가도록 에러 없이 기본 프리셋
+  it.each([
+    ["팔레트에 없는 키", "male-40s"],
+    ["한 문장 빠진 프리셋", "female-30s"],
+    ["오디오가 없는 프리셋", "male-70s"],
+  ])("고른 값이 %s(%s)면 기본 프리셋", async (_, value) => {
+    const { store, subjectId } = setup();
+    seedPreset(store, "female-30s", ALL.slice(1));
+    store.subjectPresets.set(subjectId, value);
+
+    const bundle = await getBundle({ store }, { userId: OWNER, subjectId });
+
+    expect(bundle.version).toBe("preset:male-50s");
+    expect(bundle.source).toBe("preset");
+    expect(bundle.items).toEqual(presetItems());
+  });
+
+  it("완성된 클로닝 프로필이 있으면 고른 프리셋보다 프로필이 우선한다", async () => {
+    const { store, subjectId } = setup();
+    seedPreset(store, "female-70s");
+    await store.setSubjectVoicePreset(subjectId, "female-70s");
+    const profileId = await seedProfile(store, subjectId, "self", OLDER, ALL);
+
+    const bundle = await getBundle({ store }, { userId: OWNER, subjectId });
+
+    expect(bundle.version).toBe(profileId);
+    expect(bundle.source).toBe("self");
+    expect(bundle.items).toEqual(profileItems(subjectId, profileId));
   });
 
   it("남의 대상자면 ForbiddenError, 서명 URL은 발급하지 않는다", async () => {

@@ -1,8 +1,11 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { getPhraseText, PHRASES, type PhraseId } from "@/lib/phrases";
-import { precomputePresetAudio, precomputeProfileAudio, profileAudioPath } from "./precompute";
-import { getPresetVoiceId, presetAudioPath } from "./presets";
+import type { VoicePresetKey } from "@/lib/voice-presets";
+import { isPresetComplete, precomputePresetAudio, precomputeProfileAudio, profileAudioPath } from "./precompute";
+import { getPresetVoiceId, PRESET_VOICE_IDS, presetAudioPath, presetAudioPrefix } from "./presets";
 import { createMemoryVoiceStore } from "./testing/memory-voice-store";
+
+type MemoryStore = ReturnType<typeof createMemoryVoiceStore>;
 
 const INPUT = { subjectId: "s1", voiceProfileId: "p1", voiceId: "v1" };
 const ALL_IDS = PHRASES.map((p) => p.id);
@@ -23,8 +26,9 @@ function fakeTts(failOnCall?: number) {
   };
 }
 
+const ORIGINAL_PRESET_VOICE_IDS = { ...PRESET_VOICE_IDS };
 afterEach(() => {
-  vi.unstubAllEnvs();
+  Object.assign(PRESET_VOICE_IDS, ORIGINAL_PRESET_VOICE_IDS);
 });
 
 describe("precomputeProfileAudio", () => {
@@ -115,32 +119,125 @@ describe("precomputeProfileAudio", () => {
   });
 });
 
+
+// 팀이 PRESET_VOICE_IDS를 채우거나 비워도 테스트가 흔들리지 않게 voice_id는 테스트 안에서 정한다
+function setPresetVoice(key: VoicePresetKey, voiceId: string | null): void {
+  PRESET_VOICE_IDS[key] = voiceId;
+}
+
+function seedPresetAudio(store: MemoryStore, key: VoicePresetKey, phraseIds: readonly PhraseId[]): void {
+  for (const id of phraseIds) store.audio.set(presetAudioPath(key, id), audioOf(id, "old"));
+}
+
 describe("precomputePresetAudio", () => {
-  it("presets/{key}/{phraseId}.mp3에 업로드만 하고 행은 남기지 않는다", async () => {
-    vi.stubEnv("ELEVENLABS_PRESET_VOICE_ID", "preset_v");
+  it("아무것도 없으면 모든 문장을 순서대로 합성해 presets/{key}/{phraseId}.mp3에 올리고, 행은 남기지 않는다", async () => {
+    setPresetVoice("female-30s", "preset_v");
     const store = createMemoryVoiceStore();
     const tts = fakeTts();
 
-    await precomputePresetAudio({ store, tts }, "default");
+    const result = await precomputePresetAudio({ store, tts }, "female-30s");
 
+    expect(result).toEqual({ synthesized: ALL_IDS, skipped: [] });
     expect(tts.calls).toEqual(ALL_IDS.map((phraseId) => ({ phraseId, voiceId: "preset_v" })));
-    expect([...store.audio.keys()]).toEqual(ALL_IDS.map((id) => `presets/default/${id}.mp3`));
-    for (const id of ALL_IDS) {
-      expect(presetAudioPath("default", id)).toBe(`presets/default/${id}.mp3`);
-      expect(store.audio.get(presetAudioPath("default", id))).toEqual(audioOf(id, "preset_v"));
-    }
+    expect([...store.audio.keys()]).toEqual(ALL_IDS.map((id) => `presets/female-30s/${id}.mp3`));
+    for (const id of ALL_IDS) expect(store.audio.get(presetAudioPath("female-30s", id))).toEqual(audioOf(id, "preset_v"));
     expect(store.rows).toHaveLength(0);
+  });
+
+  it("일부가 올라가 있으면 나머지만 합성하고, 있던 파일은 덮어쓰지 않는다", async () => {
+    setPresetVoice("male-70s", "preset_v");
+    const store = createMemoryVoiceStore();
+    seedPresetAudio(store, "male-70s", ALL_IDS.slice(0, 3));
+    const tts = fakeTts();
+
+    const result = await precomputePresetAudio({ store, tts }, "male-70s");
+
+    expect(result).toEqual({ synthesized: ALL_IDS.slice(3), skipped: ALL_IDS.slice(0, 3) });
+    expect(tts.calls.map((c) => c.phraseId)).toEqual(ALL_IDS.slice(3));
+    expect(store.audio.get(presetAudioPath("male-70s", ALL_IDS[0]))).toEqual(audioOf(ALL_IDS[0], "old"));
+    expect(store.audio.size).toBe(PHRASES.length);
+  });
+
+  it("전부 올라가 있으면 합성 0회 — 웹에서 목소리를 지워 voice_id가 없어도 throw하지 않는다", async () => {
+    setPresetVoice("male-50s", null);
+    const store = createMemoryVoiceStore();
+    seedPresetAudio(store, "male-50s", ALL_IDS);
+    const tts = fakeTts();
+
+    const result = await precomputePresetAudio({ store, tts }, "male-50s");
+
+    expect(result).toEqual({ synthesized: [], skipped: ALL_IDS });
+    expect(tts.calls).toHaveLength(0);
+  });
+
+  it("합성할 문장이 남았는데 voice_id가 없으면 합성·업로드 없이 throw한다", async () => {
+    setPresetVoice("female-70s", null);
+    const store = createMemoryVoiceStore();
+    seedPresetAudio(store, "female-70s", ALL_IDS.slice(0, 3));
+    const tts = fakeTts();
+
+    await expect(precomputePresetAudio({ store, tts }, "female-70s")).rejects.toThrow("female-70s");
+
+    expect(tts.calls).toHaveLength(0);
+    expect(store.audio.size).toBe(3);
+  });
+
+  it("다른 프리셋의 파일은 건너뛸 근거가 되지 않는다", async () => {
+    setPresetVoice("male-30s", "preset_v");
+    const store = createMemoryVoiceStore();
+    seedPresetAudio(store, "male-50s", ALL_IDS);
+    const tts = fakeTts();
+
+    const result = await precomputePresetAudio({ store, tts }, "male-30s");
+
+    expect(result).toEqual({ synthesized: ALL_IDS, skipped: [] });
   });
 });
 
-describe("getPresetVoiceId", () => {
-  it("ELEVENLABS_PRESET_VOICE_ID를 돌려준다", () => {
-    vi.stubEnv("ELEVENLABS_PRESET_VOICE_ID", "preset_v");
-    expect(getPresetVoiceId("default")).toBe("preset_v");
+describe("isPresetComplete", () => {
+  it("모든 문장이 올라가 있으면 true", async () => {
+    const store = createMemoryVoiceStore();
+    seedPresetAudio(store, "female-50s", ALL_IDS);
+    expect(await isPresetComplete(store, "female-50s")).toBe(true);
   });
 
-  it("환경변수가 없으면 throw한다", () => {
-    vi.stubEnv("ELEVENLABS_PRESET_VOICE_ID", "");
-    expect(() => getPresetVoiceId("default")).toThrow();
+  it("한 문장이라도 없으면 false", async () => {
+    const store = createMemoryVoiceStore();
+    seedPresetAudio(store, "female-50s", ALL_IDS.slice(1));
+    expect(await isPresetComplete(store, "female-50s")).toBe(false);
+  });
+
+  it("다른 프리셋이 다 있어도 이 프리셋이 없으면 false", async () => {
+    const store = createMemoryVoiceStore();
+    seedPresetAudio(store, "male-50s", ALL_IDS);
+    expect(await isPresetComplete(store, "female-50s")).toBe(false);
+  });
+});
+
+describe("프리셋 경로·목소리 표", () => {
+  it("presets/{key}/ 아래 {phraseId}.mp3", () => {
+    expect(presetAudioPrefix("male-50s")).toBe("presets/male-50s/");
+    expect(presetAudioPath("male-50s", "pain")).toBe("presets/male-50s/pain.mp3");
+  });
+
+  it("getPresetVoiceId는 표의 값을 돌려준다 — 아직 안 만든 목소리는 null", () => {
+    setPresetVoice("female-30s", null);
+    setPresetVoice("male-50s", "preset_v");
+    expect(getPresetVoiceId("female-30s")).toBeNull();
+    expect(getPresetVoiceId("male-50s")).toBe("preset_v");
+  });
+});
+
+describe("메모리 listAudio", () => {
+  it("prefix 아래 경로만 전부 돌려준다", async () => {
+    const store = createMemoryVoiceStore();
+    seedPresetAudio(store, "male-50s", ALL_IDS);
+    seedPresetAudio(store, "male-30s", ["pain"]);
+    await store.putAudio("s1/p1/pain.mp3", new ArrayBuffer(1));
+
+    const paths = await store.listAudio(presetAudioPrefix("male-50s"));
+
+    expect(paths.sort()).toEqual(ALL_IDS.map((id) => `presets/male-50s/${id}.mp3`).sort());
+    expect(await store.listAudio("presets/female-70s/")).toEqual([]);
   });
 });

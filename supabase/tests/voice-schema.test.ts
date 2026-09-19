@@ -195,6 +195,17 @@ describe("voice schema", () => {
     });
   });
 
+  // null이면 기본 프리셋. 팔레트 키 검증은 코드가 한다 — DB CHECK 없음
+  it("subjects.voice_preset은 text 컬럼이고 기본값은 null이다", async () => {
+    const { rows: columns } = await db.query(
+      `select data_type, is_nullable, column_default from information_schema.columns
+       where table_schema = 'public' and table_name = 'subjects' and column_name = 'voice_preset'`,
+    );
+    expect(columns).toEqual([{ data_type: "text", is_nullable: "YES", column_default: null }]);
+    const { rows } = await db.query("select voice_preset from public.subjects where id = $1", [A.subject]);
+    expect(rows).toEqual([{ voice_preset: null }]);
+  });
+
   it("superuser(service_role 대신)는 동의를 철회하고 대상자를 삭제할 수 있다", async () => {
     const { rows: [subject] } = await db.query<{ id: string }>(
       "insert into public.subjects (account_id, display_name) values ($1, '삭제될 대상자') returning id",

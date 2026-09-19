@@ -38,7 +38,7 @@ function setup(userId = OWNER) {
   const subjectId = store.seedSubject(OWNER);
   const voiceConsentId = store.seedConsent(subjectId, "voice_self");
   store.seedConsent(subjectId, "overseas_transfer");
-  for (const { id } of PHRASES) store.audio.set(presetAudioPath("default", id), new ArrayBuffer(1));
+  for (const { id } of PHRASES) store.audio.set(presetAudioPath("male-50s", id), new ArrayBuffer(1));
   const tts = fakeTts();
   const ctx: VoiceApiContext = { userId, store, tts };
   return { ctx, store, tts, subjectId, voiceConsentId };
