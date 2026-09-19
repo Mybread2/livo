@@ -7,7 +7,8 @@
       "name": "lip-normalize",
       "status": "completed",
       "started_at": "2026-09-19T17:33:22+0900",
-      "summary": "src/recognition/types.ts(입술 40점 인덱스·FEATURE_DIM 80·SEQ_FRAMES 32·LipFrame/Sequence) + normalize.ts normalizeSegment(C3: 중심 이동→입꼬리 기울기 제거→구간 입꼬리 거리 중앙값으로 크기 정규화→t 기준 32프레임 선형 리샘플, 애매한 입력은 null) + 합성 좌표 테스트 17개(이동·크기·회전·프레임률·비균일 간격·모양 보존·null 5조건)"
+      "summary": "src/recognition/types.ts(입술 40점 인덱스·FEATURE_DIM 80·SEQ_FRAMES 32·LipFrame/Sequence) + normalize.ts normalizeSegment(C3: 중심 이동→입꼬리 기울기 제거→구간 입꼬리 거리 중앙값으로 크기 정규화→t 기준 32프레임 선형 리샘플, 애매한 입력은 null) + 합성 좌표 테스트 17개(이동·크기·회전·프레임률·비균일 간격·모양 보존·null 5조건)",
+      "completed_at": "2026-09-19T17:40:12+0900"
     }
   ],
   "created_at": "2026-09-19T17:33:22+0900"
