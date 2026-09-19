@@ -69,7 +69,9 @@
     {
       "step": 8,
       "name": "revoke-delete-rls",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-19T16:29:01+0900",
+      "summary": "supabase/migrations/20260919010000_server_only_revoke_delete.sql(consents_update · subjects_delete 정책 drop — 동의 철회·대상자 삭제는 목소리 파기를 동반해야 하므로 service_role 서버 함수만, consents delete 정책 없음 유지) + voice-schema.test.ts 4개 추가(authenticated가 자기 대상자 동의 update해도 revoked_at 그대로 · 자기 대상자 delete해도 행 남음 · subjects insert/select/update·consents insert/select 회귀 · superuser는 철회 1행·삭제 1행)"
     },
     {
       "step": 9,

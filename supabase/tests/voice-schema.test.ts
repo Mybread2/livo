@@ -153,4 +153,54 @@ describe("voice schema", () => {
       }
     });
   });
+
+  // 철회·삭제는 목소리 파기를 동반해야 하므로 서버만 한다
+  it("authenticated는 자기 대상자의 동의라도 철회할 수 없다", async () => {
+    await asUser(db, A.user, () =>
+      db.query("update public.consents set revoked_at = now() where id = $1", [A.consent]),
+    );
+    const { rows } = await db.query("select revoked_at from public.consents where id = $1", [A.consent]);
+    expect(rows).toEqual([{ revoked_at: null }]);
+  });
+
+  it("authenticated는 자기 대상자라도 삭제할 수 없다", async () => {
+    await asUser(db, A.user, () => db.query("delete from public.subjects where id = $1", [A.subject]));
+    const { rows } = await db.query("select id from public.subjects where id = $1", [A.subject]);
+    expect(rows).toHaveLength(1);
+  });
+
+  it("authenticated는 자기 대상자를 만들고 조회·수정하고 동의를 기록·조회할 수 있다", async () => {
+    await asUser(db, A.user, async () => {
+      const { rows: [subject] } = await db.query<{ id: string }>(
+        "insert into public.subjects (account_id, display_name) values ($1, '새 대상자') returning id",
+        [A.account],
+      );
+      await db.query("update public.subjects set display_name = '바뀐 이름' where id = $1", [subject.id]);
+      await insertConsent(db, subject.id);
+
+      const { rows: subjects } = await db.query("select display_name from public.subjects where id = $1", [
+        subject.id,
+      ]);
+      expect(subjects).toEqual([{ display_name: "바뀐 이름" }]);
+      const { rows: consents } = await db.query("select kind from public.consents where subject_id = $1", [
+        subject.id,
+      ]);
+      expect(consents).toEqual([{ kind: "voice_self" }]);
+    });
+  });
+
+  it("superuser(service_role 대신)는 동의를 철회하고 대상자를 삭제할 수 있다", async () => {
+    const { rows: [subject] } = await db.query<{ id: string }>(
+      "insert into public.subjects (account_id, display_name) values ($1, '삭제될 대상자') returning id",
+      [A.account],
+    );
+    await insertConsent(db, subject.id);
+
+    const revoke = await db.query("update public.consents set revoked_at = now() where subject_id = $1", [
+      subject.id,
+    ]);
+    expect(revoke.affectedRows).toBe(1);
+    const remove = await db.query("delete from public.subjects where id = $1", [subject.id]);
+    expect(remove.affectedRows).toBe(1);
+  });
 });
