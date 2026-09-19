@@ -4,6 +4,10 @@ out/
 next-env.d.ts
 tsconfig.tsbuildinfo
 
+# env — 실제 키는 커밋하지 않는다
+.env*
+!.env.example
+
 # phase execution outputs
 phases/**/phase*-output.json
 phases/**/step*-output.json
