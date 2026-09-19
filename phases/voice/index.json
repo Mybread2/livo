@@ -117,7 +117,9 @@
     {
       "step": 14,
       "name": "voice-profile-routes",
-      "status": "pending"
+      "status": "completed",
+      "summary": "src/services/voice-profile-api.ts(server-only · handleCreateUpload{subject_id, source} → 200 {path, signed_url, token} · handleRegister{subject_id, source, ref_audio_path(문자열 아니면 400, 경로 규칙은 registerVoiceProfile)} → 201 {profile_id, voice_id, preview_url} · handleResume(profileId, {subject_id}) → 200 {synthesized, skipped} — parseUuid·parseSource로만 검증, 본문의 text·phrase_id·voice_id 등 알 수 없는 필드는 읽지 않음, 오류는 전부 각 핸들러 안에서 errorResponse) + voice-profile-api.test.ts 17개(메모리 store + fake tts — 업로드 URL 200/409 missing/403/400 · 업로드→등록 201 · 3번째 문장 실패 502 precompute_incomplete → 그 profile_id 재시도 200 남은 13문장만 · 잘못된 uuid·ref_audio_path 400 · 다른 대상자 경로 403 · text/voice_id 넣어도 합성은 PHRASES 전체 + 클론 voice) · 라우트 3개(runtime nodejs, getVoiceApiContext → readJsonObject → 핸들러, catch errorResponse): api/voice-profile/upload-url · api/voice-profile(A 스텁 대체, maxDuration 60) · api/voice-profile/[profile_id]/precompute(maxDuration 60, Next 14 동기 params)",
+      "started_at": "2026-09-19T16:56:29+0900"
     },
     {
       "step": 15,

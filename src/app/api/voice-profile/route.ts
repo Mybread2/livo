@@ -1,14 +1,17 @@
-import { NextResponse } from "next/server";
+import { errorResponse, getVoiceApiContext, readJsonObject } from "@/services/api";
+import { handleRegister } from "@/services/voice-profile-api";
 
 export const runtime = "nodejs";
+// 클론 + 15문장 순차 합성
+export const maxDuration = 60;
 
-// POST /api/voice-profile — 참조 음성 → ElevenLabs voice 등록 → 사전 합성(담당 C).
-// CRITICAL: consent_id 없이 처리하지 않는다(voice_profiles.consent_id NOT NULL).
-//           ElevenLabs 키·호출은 이 서버 경로(src/services)에서만.
-// 골격 스텁 — 담당 C가 구현한다.
-export async function POST() {
-  return NextResponse.json(
-    { error: "미구현: 담당 C가 음성 프로필 등록을 구현한다." },
-    { status: 501 },
-  );
+// POST /api/voice-profile — 참조 음성 → ElevenLabs voice 등록 → 사전 합성. 권한·동의 검사는 서버 함수가 한다.
+export async function POST(req: Request) {
+  const ctx = await getVoiceApiContext();
+  if (ctx instanceof Response) return ctx;
+  try {
+    return await handleRegister(ctx, await readJsonObject(req));
+  } catch (err) {
+    return errorResponse(err);
+  }
 }
