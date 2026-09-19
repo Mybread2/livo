@@ -76,12 +76,14 @@
     {
       "step": 9,
       "name": "lip-recognizer",
-      "status": "pending"
+      "status": "completed",
+      "summary": "수동 구현(속도 우선 — Harness 중단): src/recognition/camera.ts(openCamera: 전면·640×480·소리 없음, 재생 실패 시 끔, stop 멱등) + lipRecognizer.ts(LipRecognizer implements Recognizer: 템플릿 먼저 읽고 없으면 경고·카메라 안 켬 → 카메라 → createLipLandmarker → RecognitionPipeline(manualSession) → rAF 루프[readyState·currentTime 증가·30ms 간격일 때만 detect→push, discard 포함 onResult, onResult 예외 무시] · 세대 번호로 start/stop 경합 정리 · start는 reject 안 함) + 테스트 11개"
     },
     {
       "step": 10,
       "name": "subject-wiring",
-      "status": "pending"
+      "status": "completed",
+      "summary": "수동 구현: src/app/(subject)/subject/page.tsx 인식기 생성만 교체 — 기본 LipRecognizer, ?recognizer=mock이면 MockRecognizer. 목소리·로그·표시 로직 무변경"
     }
   ],
   "created_at": "2026-09-19T17:33:22+0900",

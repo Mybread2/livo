@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { GateResult, Recognizer } from "@/types/recognition";
 import { MockRecognizer } from "@/recognition/mockRecognizer";
+import { LipRecognizer } from "@/recognition/lipRecognizer";
 import {
   createVoicePlayer,
   VoiceNotReadyError,
@@ -14,7 +15,7 @@ import { SentenceDisplay } from "@/components/subject/SentenceDisplay";
 import { enqueue } from "@/offline/logQueue";
 
 // 대상자 화면 런타임(와이어프레임 s19~s23).
-// 인식(B)은 아직 mock, 목소리(C)는 실제 사전 합성 오디오로 연동됐다.
+// 인식(B)은 LipRecognizer(기기 템플릿 필요 — /dev/lips), `?recognizer=mock`이면 목. 목소리(C)는 실제 사전 합성 오디오로 연동됐다.
 // CRITICAL: 이 화면은 손 없이 완결한다. 발화 순간 네트워크를 쓰지 않는다(sync는 미리).
 export default function SubjectPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -29,9 +30,11 @@ export default function SubjectPage() {
     if (!video) return;
 
     // 병상 태블릿은 URL로 대상자를 받는다: /subject?subject=<uuid>
-    const subjectId = new URLSearchParams(window.location.search).get("subject");
+    const params = new URLSearchParams(window.location.search);
+    const subjectId = params.get("subject");
 
-    const recognizer: Recognizer = new MockRecognizer();
+    const recognizer: Recognizer =
+      params.get("recognizer") === "mock" ? new MockRecognizer() : new LipRecognizer();
     let clearTimer: ReturnType<typeof setTimeout> | null = null;
     let disposed = false;
 
