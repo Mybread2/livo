@@ -1,14 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
-// 보호자 로그인(와이어프레임 s02). Google OAuth 단독.
+// 보호자 로그인(와이어프레임 s02·s03). Google OAuth 단독.
 // Supabase 미연결이면 안내만 하고 dev 흐름을 막지 않는다.
 export default function LoginPage() {
   const [msg, setMsg] = useState<string | null>(null);
 
+  // 콜백에서 실패로 돌아온 경우(?error=auth) 사유를 보여준다.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error")) {
+      setMsg("로그인이 되지 않았습니다. 다시 시도해 주세요.");
+    }
+  }, []);
+
   const onGoogle = async () => {
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      setMsg("인터넷에 연결되어 있지 않습니다. 연결 후 다시 시도해 주세요.");
+      return;
+    }
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
       setMsg("Supabase가 아직 연결되지 않았습니다(.env.local 필요).");
