@@ -10,9 +10,11 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "precompute:presets": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/precompute-presets.ts"
+    "precompute:presets": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/precompute-presets.ts",
+    "postinstall": "node scripts/copy-mediapipe-wasm.mjs"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "^1.0.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
     "next": "^14.2.35",

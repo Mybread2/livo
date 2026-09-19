@@ -8,6 +8,9 @@ tsconfig.tsbuildinfo
 .env*
 !.env.example
 
+# MediaPipe WASM — 설치 때 scripts/copy-mediapipe-wasm.mjs가 패키지에서 복사한다(약 22MB, 커밋 안 함)
+public/mediapipe/wasm/
+
 # phase execution outputs
 phases/**/phase*-output.json
 phases/**/step*-output.json

@@ -33,6 +33,13 @@
       "started_at": "2026-09-19T18:01:42+0900",
       "summary": "src/recognition/segment.ts(C2: mouthOpenness[안쪽 입술 13·14 거리 ÷ 입꼬리 61·291 거리, 입꼬리 ≤ 1e-6이면 NaN] + SegmentDetector[대기/발화 중/너무 김 3상태 · 휴지 기준 EMA alpha=1−exp(−Δt/τ) · 시작 시 preRoll 200ms 앞붙임 · 마지막 움직임 후 500ms 정지면 끝(정지 프레임 제외) · 간격 > 250ms면 진행 중 구간 버리고 처음부터 · NaN 개폐량·비유한/비증가 t 무시 · reset] + DEFAULT_SEGMENT_OPTIONS 명세값 그대로) + 합성 입 모양 테스트 22개. 명세 규칙이 명세 테스트와 충돌한 2곳은 보수적으로 해결(검수 필요): ① minMs는 preRoll을 빼고 시작 판정~마지막 움직임으로 잰다(문자 규칙이면 0.1초 움직임도 preRoll 포함 266.7ms로 통과) ② maxMs로 버린 뒤 입이 stillMs 동안 멎을 때까지 새 구간을 시작하지 않는다(문자 규칙이면 4초 움직임의 꼬리 1.07초가 새 구간으로 나감)",
       "completed_at": "2026-09-19T18:15:35+0900"
+    },
+    {
+      "step": 4,
+      "name": "mediapipe-landmarker",
+      "status": "completed",
+      "started_at": "2026-09-19T19:04:54+0900",
+      "summary": "src/recognition/landmarker.ts(C1 브라우저 부분: MEDIAPIPE_WASM_BASE '/mediapipe/wasm'·FACE_LANDMARKER_MODEL_PATH '/mediapipe/face_landmarker.task' 같은 출처 상수 + createLipLandmarker[@mediapipe/tasks-vision 동적 import → FilesetResolver.forVisionTasks → FaceLandmarker VIDEO·numFaces 1·blendshape/행렬 끔, 기본 GPU·throw 시 CPU로 1회 재시도] + LipLandmarker.detect[엄격 증가 아닌·비유한 timestamp와 readyState<2는 추론 없이 null, 첫 얼굴 점을 {x,y} 새 객체로 복사, 얼굴 없으면 null] · close[한 번만, 이후 detect null]) + @mediapipe/tasks-vision ^1.0.1 의존성 + scripts/copy-mediapipe-wasm.mjs(postinstall: WASM 4개 → public/mediapipe/wasm/, 반복 실행 동일·원본 없으면 exit 1) + .gitignore public/mediapipe/wasm/ + face_landmarker.task(sha256 고정) 커밋 + NOTICE.txt(출처·Apache-2.0·sha256) + Node 테스트 4개(입술 40점 = FACE_LANDMARKS_LIPS 고유 점·경로 상수 CDN 금지·모델 크기). 실제 WASM·카메라 동작은 미검증(다음 step 수집 페이지)"
     }
   ],
   "created_at": "2026-09-19T17:33:22+0900",
