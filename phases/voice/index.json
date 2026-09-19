@@ -1,0 +1,14 @@
+{
+  "project": "리보 (Livo)",
+  "phase": "voice",
+  "steps": [
+    { "step": 0, "name": "voice-tooling", "status": "pending" },
+    { "step": 1, "name": "voice-contracts", "status": "pending" },
+    { "step": 2, "name": "voice-schema", "status": "pending" },
+    { "step": 3, "name": "elevenlabs-client", "status": "pending" },
+    { "step": 4, "name": "precompute", "status": "pending" },
+    { "step": 5, "name": "voice-registration", "status": "pending" },
+    { "step": 6, "name": "bundle", "status": "pending" },
+    { "step": 7, "name": "voice-player", "status": "pending" }
+  ]
+}
