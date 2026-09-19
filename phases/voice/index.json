@@ -13,7 +13,9 @@
     {
       "step": 1,
       "name": "voice-contracts",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-19T15:35:04+0900",
+      "summary": "src/types/voice.ts(VoicePlayer A↔C 계약, speak/isReady(phraseId: string) 원문 그대로), src/lib/phrases.ts(PHRASES 5개 as const — 합성 텍스트 유일 원본, PhraseId, isPhraseId 타입가드, getPhraseText는 미등록 id면 throw) + phrases.test.ts 6개"
     },
     {
       "step": 2,
