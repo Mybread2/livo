@@ -37,7 +37,9 @@
     {
       "step": 4,
       "name": "precompute",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-19T15:42:57+0900",
+      "summary": "src/services/voice-store.ts(server-only · VoiceStore{putAudio(path, ArrayBuffer) — phrase-audio bucket upsert audio/mpeg, listPhraseAudio(voiceProfileId), upsertPhraseAudio(row) — onConflict voice_profile_id,phrase_id} + createSupabaseVoiceStore(service_role SupabaseClient), 조회 행은 isPhraseId로 거름) · src/services/testing/memory-voice-store.ts(createMemoryVoiceStore() — VoiceStore + audio Map·rows 노출) · src/services/presets.ts(PRESET_KEYS ['default'], getPresetVoiceId는 ELEVENLABS_PRESET_VOICE_ID 없거나 빈 값이면 throw, presetAudioPath → presets/{key}/{phraseId}.mp3) · src/services/precompute.ts(profileAudioPath → {subjectId}/{voiceProfileId}/{phraseId}.mp3 · precomputeProfileAudio — PHRASES 순차, 문장마다 합성→업로드→행 upsert, 기존 행 있으면 skipped, 실패 시 그대로 throw → {synthesized, skipped} · precomputePresetAudio — 업로드만, 행 없음) + precompute.test.ts 8개, dep @supabase/supabase-js"
     },
     {
       "step": 5,
