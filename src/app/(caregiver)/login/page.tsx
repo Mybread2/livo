@@ -16,7 +16,8 @@ export default function LoginPage() {
     }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/home` },
+      // 코드 교환은 /auth/callback 이 한다 → 거기서 /home 으로 보낸다.
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/home` },
     });
     if (error) setMsg("로그인이 되지 않았습니다. 다시 시도해 주세요.");
   };

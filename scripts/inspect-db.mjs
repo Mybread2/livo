@@ -1,0 +1,12 @@
+import pg from "pg";
+const c = new pg.Client({ connectionString: process.argv[2] });
+await c.connect();
+const t = await c.query(`select tablename from pg_tables where schemaname='public' order by 1`);
+console.log("tables:", t.rows.map(r => r.tablename).join(", "));
+const con = await c.query(`select conname from pg_constraint where connamespace='public'::regnamespace order by 1`);
+console.log("constraints:", con.rows.map(r => r.conname).join(", "));
+const pol = await c.query(`select policyname, tablename from pg_policies where schemaname='public' order by tablename, policyname`);
+console.log("policies:", pol.rows.map(r => `${r.tablename}.${r.policyname}`).join(", "));
+const b = await c.query(`select id from storage.buckets order by 1`).catch(() => ({rows:[]}));
+console.log("buckets:", b.rows.map(r => r.id).join(", "));
+await c.end();
