@@ -38,6 +38,8 @@ export interface PhraseAudioRow {
 // 서버의 Supabase 접근은 이 인터페이스 뒤에 둔다. 테스트는 testing/memory-voice-store.ts로 한다.
 export interface VoiceStore {
   putAudio(path: string, data: ArrayBuffer): Promise<void>;
+  // phrase-audio bucket의 prefix('/'로 끝나는 폴더) 아래 파일 경로 전부
+  listAudio(prefix: string): Promise<string[]>;
   listPhraseAudio(voiceProfileId: string): Promise<PhraseAudioRow[]>;
   upsertPhraseAudio(row: PhraseAudioRow): Promise<void>;
   ownsSubject(userId: string, subjectId: string): Promise<boolean>;
@@ -82,6 +84,20 @@ export function createSupabaseVoiceStore(admin: SupabaseClient): VoiceStore {
         .from(AUDIO_BUCKET)
         .upload(path, data, { contentType: "audio/mpeg", upsert: true });
       if (error) throw new Error(`오디오 업로드 실패: ${error.message}`);
+    },
+
+    // 프리셋 경로는 폴더 아래 한 단계다 (presetAudioPath) — 하위 폴더로 내려가지 않는다
+    async listAudio(prefix) {
+      const folder = prefix.replace(/\/$/, "");
+      const paths: string[] = [];
+      for (let offset = 0; ; offset += LIST_PAGE_SIZE) {
+        const { data, error } = await admin.storage
+          .from(AUDIO_BUCKET)
+          .list(folder, { limit: LIST_PAGE_SIZE, offset, sortBy: { column: "name", order: "asc" } });
+        if (error) throw new Error(`오디오 목록 조회 실패: ${error.message}`);
+        paths.push(...data.map((f) => `${folder}/${f.name}`));
+        if (data.length < LIST_PAGE_SIZE) return paths;
+      }
     },
 
     async listPhraseAudio(voiceProfileId) {

@@ -133,7 +133,9 @@
     {
       "step": 16,
       "name": "voice-palette",
-      "status": "pending"
+      "status": "completed",
+      "summary": "src/lib/voice-presets.ts(공용 · VOICE_PRESETS 6개 {key, gender, ageBand, label} — 남/여 × 30/50/70대, voice_id 없음 · VoicePresetKey · DEFAULT_VOICE_PRESET 'male-50s' · isVoicePresetKey) + 테스트 12개(키 중복 없음·기본값 포함·항목 필드 4개뿐·타입가드) · src/services/presets.ts(server-only · PRESET_KEYS·환경변수 제거 → PRESET_VOICE_IDS: Record<VoicePresetKey, string | null>(male-50s만 ld4WnBGjZkAYMoRQz6p9, 나머지 null) · getPresetVoiceId → string | null · presetAudioPrefix 'presets/{key}/' · presetAudioPath) · VoiceStore.listAudio(prefix)(Supabase phrase-audio 폴더 한 단계 100개씩 페이지 · 메모리 startsWith) · precomputePresetAudio({store: putAudio·listAudio, tts}, key) → {synthesized, skipped} — 올라간 문장 건너뜀, 남은 문장 있는데 voice_id null이면 합성 전 throw, 순차 · isPresetComplete(store, key) · bundle.ts 프리셋 대체 DEFAULT_VOICE_PRESET(preset:male-50s) · scripts: REQUIRED_ENV 3개(ELEVENLABS_PRESET_VOICE_ID 제거, .env.example도), precompute-presets는 VOICE_PRESETS 전체 — voice_id null이면 '대기(목소리 미생성)', 아니면 '합성 n · 건너뜀 m' · 기존 테스트 default → male-50s(bundle·bundle-purge-api·voice-player), precompute.test.ts 프리셋 테스트 11개(PRESET_VOICE_IDS를 테스트 안에서 정하고 afterEach 복원) · 총 196개 통과",
+      "started_at": "2026-09-19T17:46:26+0900"
     },
     {
       "step": 17,

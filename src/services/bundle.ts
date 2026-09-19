@@ -1,12 +1,12 @@
 import "server-only";
 import { PHRASES, type PhraseId } from "@/lib/phrases";
+import { DEFAULT_VOICE_PRESET } from "@/lib/voice-presets";
 import type { VoiceBundle } from "@/types/voice-bundle";
-import { presetAudioPath, type PresetKey } from "./presets";
+import { presetAudioPath } from "./presets";
 import { ForbiddenError } from "./voice-profile";
 import type { VoiceStore } from "./voice-store";
 
 const DEFAULT_EXPIRES_SEC = 3600;
-const FALLBACK_PRESET: PresetKey = "default";
 
 type ChosenVoice = Pick<VoiceBundle, "version" | "source"> & { paths: { phraseId: PhraseId; path: string }[] };
 
@@ -28,9 +28,9 @@ async function chooseVoice(store: VoiceStore, subjectId: string): Promise<Chosen
   }
   // 응급 발화는 목소리 등록 여부와 상관없이 나가야 한다
   return {
-    version: `preset:${FALLBACK_PRESET}`,
+    version: `preset:${DEFAULT_VOICE_PRESET}`,
     source: "preset",
-    paths: PHRASES.map(({ id }) => ({ phraseId: id, path: presetAudioPath(FALLBACK_PRESET, id) })),
+    paths: PHRASES.map(({ id }) => ({ phraseId: id, path: presetAudioPath(DEFAULT_VOICE_PRESET, id) })),
   };
 }
 

@@ -1,7 +1,6 @@
 // precompute-presets.ts가 네트워크 호출 전에 확인하는 환경변수. 부작용이 없어 테스트에서 import할 수 있다.
 export const REQUIRED_ENV = [
   "ELEVENLABS_API_KEY",
-  "ELEVENLABS_PRESET_VOICE_ID",
   "NEXT_PUBLIC_SUPABASE_URL",
   "SUPABASE_SERVICE_ROLE_KEY",
 ] as const;

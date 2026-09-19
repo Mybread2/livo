@@ -34,6 +34,10 @@ export function createMemoryVoiceStore() {
       audio.set(path, data);
     },
 
+    async listAudio(prefix) {
+      return [...audio.keys()].filter((path) => path.startsWith(prefix));
+    },
+
     async listPhraseAudio(voiceProfileId) {
       return rows.filter((r) => r.voiceProfileId === voiceProfileId).map((r) => ({ ...r }));
     },
