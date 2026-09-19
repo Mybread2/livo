@@ -7,6 +7,7 @@ export const REQUIRED_ENV = [
 ] as const;
 
 // 빈 문자열도 없는 것으로 본다. 이름만 돌려준다 — 값은 출력하지 않는다.
-export function missingEnv(env: NodeJS.ProcessEnv): string[] {
+// NodeJS.ProcessEnv가 아닌 이유: Next.js 타입이 NODE_ENV를 필수로 만들어 테스트의 부분 객체를 받지 못한다.
+export function missingEnv(env: Readonly<Record<string, string | undefined>>): string[] {
   return REQUIRED_ENV.filter((name) => !env[name]);
 }

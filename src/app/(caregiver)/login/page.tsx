@@ -1,0 +1,77 @@
+"use client";
+
+import { useState } from "react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+
+// 보호자 로그인(와이어프레임 s02). Google OAuth 단독.
+// Supabase 미연결이면 안내만 하고 dev 흐름을 막지 않는다.
+export default function LoginPage() {
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const onGoogle = async () => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setMsg("Supabase가 아직 연결되지 않았습니다(.env.local 필요).");
+      return;
+    }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/home` },
+    });
+    if (error) setMsg("로그인이 되지 않았습니다. 다시 시도해 주세요.");
+  };
+
+  return (
+    <main
+      style={{
+        minHeight: "100dvh",
+        display: "flex",
+        flexDirection: "column",
+        padding: 24,
+        gap: 16,
+      }}
+    >
+      <div style={{ flex: 1 }} />
+      <div style={{ textAlign: "center" }}>
+        <div style={{ font: "800 24px/1 Pretendard", letterSpacing: "-0.045em" }}>
+          입모아
+        </div>
+        <div style={{ color: "#6d707a", marginTop: 8 }}>
+          보호자 계정으로 시작합니다
+        </div>
+      </div>
+      <div style={{ flex: 1 }} />
+      <button
+        onClick={onGoogle}
+        style={{
+          background: "#2A52BE",
+          color: "#fff",
+          border: "none",
+          borderRadius: 10,
+          padding: 16,
+          fontSize: 16,
+          fontWeight: 700,
+        }}
+      >
+        Google로 계속하기
+      </button>
+      {msg && (
+        <div
+          style={{
+            background: "#fafafa",
+            border: "1px solid rgba(21,22,26,0.09)",
+            borderRadius: 10,
+            padding: 12,
+            fontSize: 13.5,
+            color: "#5c5f67",
+          }}
+        >
+          {msg}
+        </div>
+      )}
+      <div style={{ textAlign: "center", color: "#6d707a", fontSize: 12.5 }}>
+        병상 태블릿은 한 번 로그인하면 유지됩니다.
+      </div>
+    </main>
+  );
+}

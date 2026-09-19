@@ -234,7 +234,7 @@ describe("registerVoiceProfile", () => {
 });
 
 describe("resumePrecompute", () => {
-  it("남은 문장만 합성한다 — skipped 2개 · synthesized 3개, phrase_audio 5행", async () => {
+  it("남은 문장만 합성한다 — 앞 2개는 skipped, 나머지는 synthesized, phrase_audio는 전 문장", async () => {
     const { store, subjectId, err } = await registerIncomplete();
     const tts = fakeTts();
 
@@ -246,7 +246,7 @@ describe("resumePrecompute", () => {
     const ids = PHRASES.map((p) => p.id);
     expect(result).toEqual({ skipped: ids.slice(0, 2), synthesized: ids.slice(2) });
     expect(store.rows.filter((r) => r.voiceProfileId === err.profileId)).toHaveLength(PHRASES.length);
-    expect(tts.synthesizePhrase).toHaveBeenCalledTimes(3);
+    expect(tts.synthesizePhrase).toHaveBeenCalledTimes(PHRASES.length - 2);
     expect(tts.synthesizePhrase.mock.calls.every(([, voiceId]) => voiceId === "cloned_v")).toBe(true);
   });
 

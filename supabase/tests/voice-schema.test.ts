@@ -67,17 +67,16 @@ describe("voice schema", () => {
     await db?.close();
   });
 
-  it("마이그레이션이 적용되어 5개 테이블 모두 RLS가 켜지고 private bucket 2개가 생긴다", async () => {
-    const { rows: tables } = await db.query(
+  it("마이그레이션이 적용되어 public의 모든 테이블에 RLS가 켜지고 private bucket 2개가 생긴다", async () => {
+    const { rows: tables } = await db.query<{ relname: string; relrowsecurity: boolean }>(
       `select relname, relrowsecurity from pg_class
        where relnamespace = 'public'::regnamespace and relkind = 'r' order by relname`,
     );
-    expect(tables).toEqual(
-      ["accounts", "consents", "phrase_audio", "subjects", "voice_profiles"].map((relname) => ({
-        relname,
-        relrowsecurity: true,
-      })),
+    expect(tables.map((t) => t.relname)).toEqual(
+      expect.arrayContaining(["accounts", "consents", "phrase_audio", "subjects", "voice_profiles"]),
     );
+    // 다른 담당의 테이블(utterances 등)까지 포함해 전부 — CLAUDE.md CRITICAL: 모든 테이블에 RLS
+    expect(tables.filter((t) => !t.relrowsecurity)).toEqual([]);
 
     const { rows: buckets } = await db.query("select id, public from storage.buckets order by id");
     expect(buckets).toEqual([
@@ -166,6 +165,13 @@ describe("voice schema", () => {
   it("authenticated는 자기 대상자라도 삭제할 수 없다", async () => {
     await asUser(db, A.user, () => db.query("delete from public.subjects where id = $1", [A.subject]));
     const { rows } = await db.query("select id from public.subjects where id = $1", [A.subject]);
+    expect(rows).toHaveLength(1);
+  });
+
+  // 계정을 지우면 대상자까지 cascade되어 목소리 파기가 건너뛰어진다
+  it("authenticated는 자기 계정을 삭제할 수 없다", async () => {
+    await asUser(db, A.user, () => db.query("delete from public.accounts where id = $1", [A.account]));
+    const { rows } = await db.query("select id from public.accounts where id = $1", [A.account]);
     expect(rows).toHaveLength(1);
   });
 
