@@ -1,0 +1,24 @@
+{
+  "project": "리보 (Livo)",
+  "phase": "recognition",
+  "steps": [
+    {
+      "step": 0,
+      "name": "lip-normalize",
+      "status": "completed",
+      "started_at": "2026-09-19T17:33:22+0900",
+      "summary": "src/recognition/types.ts(입술 40점 인덱스·FEATURE_DIM 80·SEQ_FRAMES 32·LipFrame/Sequence) + normalize.ts normalizeSegment(C3: 중심 이동→입꼬리 기울기 제거→구간 입꼬리 거리 중앙값으로 크기 정규화→t 기준 32프레임 선형 리샘플, 애매한 입력은 null) + 합성 좌표 테스트 17개(이동·크기·회전·프레임률·비균일 간격·모양 보존·null 5조건)",
+      "completed_at": "2026-09-19T17:40:12+0900"
+    },
+    {
+      "step": 1,
+      "name": "dtw-nearest",
+      "status": "completed",
+      "started_at": "2026-09-19T17:46:08+0900",
+      "summary": "src/recognition/dtw.ts(C4 거리: frameDistance 유클리드 + dtwDistance Sakoe-Chiba 폭 DTW[기본 DEFAULT_BAND 8, 실제 폭 max(band, |n−m|), 두 행 메모리, 누적 비용 ÷ (n+m), 빈 시퀀스·행 길이≠80·band 음수/NaN은 throw] + nearestPhrases 1-NN[문장별 템플릿 최소 거리, label·d1·d2·distances, 빈 템플릿 무시·전부 없으면 null, 동점은 키 순서]) + 합성 sin 시퀀스 테스트 23개(0·대칭·손계산 표·시간 왜곡·모양 구분·폭 제한·길이 차·throw·1-NN 6조건). 거리→점수·거절 기준은 미구현(뒤 step)",
+      "completed_at": "2026-09-19T17:51:55+0900"
+    }
+  ],
+  "created_at": "2026-09-19T17:33:22+0900",
+  "completed_at": "2026-09-19T17:51:55+0900"
+}
