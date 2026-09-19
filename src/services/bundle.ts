@@ -1,7 +1,8 @@
 import "server-only";
 import { PHRASES, type PhraseId } from "@/lib/phrases";
-import { DEFAULT_VOICE_PRESET } from "@/lib/voice-presets";
+import { DEFAULT_VOICE_PRESET, isVoicePresetKey, type VoicePresetKey } from "@/lib/voice-presets";
 import type { VoiceBundle } from "@/types/voice-bundle";
+import { isPresetComplete } from "./precompute";
 import { presetAudioPath } from "./presets";
 import { ForbiddenError } from "./voice-profile";
 import type { VoiceStore } from "./voice-store";
@@ -27,11 +28,20 @@ async function chooseVoice(store: VoiceStore, subjectId: string): Promise<Chosen
     if (paths.length === PHRASES.length) return { version: id, source, paths };
   }
   // 응급 발화는 목소리 등록 여부와 상관없이 나가야 한다
+  const presetKey = await chooseSubjectPreset(store, subjectId);
   return {
-    version: `preset:${DEFAULT_VOICE_PRESET}`,
+    version: `preset:${presetKey}`,
     source: "preset",
-    paths: PHRASES.map(({ id }) => ({ phraseId: id, path: presetAudioPath(DEFAULT_VOICE_PRESET, id) })),
+    paths: PHRASES.map(({ id }) => ({ phraseId: id, path: presetAudioPath(presetKey, id) })),
   };
+}
+
+// 대상자가 고른 프리셋. 클라이언트가 subjects.voice_preset을 직접 바꿀 수 있으므로 저장된 값을 믿지 않고 다시 확인한다.
+// 팔레트에 없거나 합성이 덜 된 값이면 에러 없이 기본 프리셋 — 선택값 문제로 응급 발화가 막히면 안 된다.
+async function chooseSubjectPreset(store: VoiceStore, subjectId: string): Promise<VoicePresetKey> {
+  const key = await store.getSubjectVoicePreset(subjectId);
+  if (isVoicePresetKey(key) && (await isPresetComplete(store, key))) return key;
+  return DEFAULT_VOICE_PRESET;
 }
 
 // GET /api/bundle/:subject_id의 본체. 권한 검사는 여기서 한다 — 라우트는 얇은 래퍼다.

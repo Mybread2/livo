@@ -28,6 +28,8 @@ export function createMemoryVoiceStore() {
   const profiles: MemoryVoiceProfile[] = [];
   const consents: MemoryConsent[] = [];
   const subjectOwners = new Map<string, string>(); // subjectId → 계정의 user_id (accounts.user_id는 unique라 1:1)
+  // subjects.voice_preset (subjectId → 값, 없으면 null). 클라이언트의 직접 수정을 흉내 내려 아무 문자열이나 넣을 수 있다
+  const subjectPresets = new Map<string, string>();
 
   const store: VoiceStore = {
     async putAudio(path, data) {
@@ -136,9 +138,18 @@ export function createMemoryVoiceStore() {
     // consents·voice_profiles·phrase_audio는 FK cascade. Storage(audio·refs)는 DB cascade로 지워지지 않는다
     async deleteSubject(subjectId) {
       subjectOwners.delete(subjectId);
+      subjectPresets.delete(subjectId);
       removeWhere(consents, (c) => c.subjectId === subjectId);
       removeWhere(profiles, (p) => p.subjectId === subjectId);
       removeWhere(rows, (r) => r.subjectId === subjectId);
+    },
+
+    async getSubjectVoicePreset(subjectId) {
+      return subjectPresets.get(subjectId) ?? null;
+    },
+
+    async setSubjectVoicePreset(subjectId, key) {
+      subjectPresets.set(subjectId, key);
     },
   };
 
@@ -180,5 +191,5 @@ export function createMemoryVoiceStore() {
     return id;
   }
 
-  return { ...store, audio, refs, rows, profiles, consents, seedSubject, seedConsent, seedVoiceProfile };
+  return { ...store, audio, refs, rows, profiles, consents, subjectPresets, seedSubject, seedConsent, seedVoiceProfile };
 }
