@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { PHRASES } from "@/lib/phrases";
 import type { VoiceBundle } from "@/types/voice-bundle";
-import { createVoicePlayer, VoiceNotReadyError, type AudioOutput } from "./voice-player";
+import {
+  createAudioElementOutput,
+  createVoicePlayer,
+  unlockOnFirstGesture,
+  VoiceNotReadyError,
+  type AudioOutput,
+} from "./voice-player";
 
 const ALL = PHRASES.map((p) => p.id);
 const CACHE_NAME = "livo-voice";
@@ -206,5 +212,113 @@ describe("speak", () => {
     await first; // 멈춘 재생은 끝난 것으로 처리된다
     expect(plays.map((p) => p.stopped)).toEqual([true, false]);
     expect(await played(plays)).toEqual(["preset:male-50s/pain", "preset:male-50s/water"]);
+  });
+});
+
+// 브라우저 자동재생 정책: 사용자 조작 없이 새로 만든 오디오는 소리가 막힌다(특히 iOS).
+// 요소 하나를 재사용하고, 보호자의 한 번의 터치로 그 요소의 재생 권한을 얻어 둔다.
+function createFakeElement({ blocked = false } = {}) {
+  const sources: string[] = []; // play() 때의 src
+  const element = {
+    src: "",
+    onended: null as (() => void) | null,
+    onerror: null as (() => void) | null,
+    play: vi.fn(async () => {
+      sources.push(element.src);
+      if (blocked) throw new DOMException("자동재생 차단", "NotAllowedError");
+    }),
+    pause: vi.fn(),
+  };
+  let n = 0;
+  const revoked: string[] = [];
+  const urls = { create: () => `blob:${++n}`, revoke: (url: string) => void revoked.push(url) };
+  return { element, sources, revoked, urls };
+}
+
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+const clip = () => new Blob(["x"], { type: "audio/mpeg" });
+
+describe("오디오 출력 (자동재생 정책)", () => {
+  it("문장마다 같은 오디오 요소로 재생하고, 끝나면 object URL을 해제한다", async () => {
+    const { element, sources, revoked, urls } = createFakeElement();
+    const output = createAudioElementOutput(element, urls);
+
+    const first = output.play(clip());
+    element.onended?.();
+    await first;
+    const second = output.play(clip());
+    element.onended?.();
+    await second;
+
+    expect(sources).toEqual(["blob:1", "blob:2"]);
+    expect(revoked).toEqual(["blob:1", "blob:2"]);
+  });
+
+  it("stop은 재생을 멈추고 대기 중인 play를 끝낸다", async () => {
+    const { element, revoked, urls } = createFakeElement();
+    const output = createAudioElementOutput(element, urls);
+
+    const playing = output.play(clip());
+    output.stop();
+
+    await expect(playing).resolves.toBeUndefined();
+    expect(element.pause).toHaveBeenCalled();
+    expect(revoked).toEqual(["blob:1"]);
+  });
+
+  it("재생이 막히면 play가 reject하고 object URL을 해제한다", async () => {
+    const { element, revoked, urls } = createFakeElement({ blocked: true });
+    const output = createAudioElementOutput(element, urls);
+
+    await expect(output.play(clip())).rejects.toMatchObject({ name: "NotAllowedError" });
+    expect(revoked).toEqual(["blob:1"]);
+  });
+
+  it("unlock은 무음 오디오를 같은 요소로 재생해 재생 권한을 얻는다", async () => {
+    const { element, sources, urls } = createFakeElement();
+    const output = createAudioElementOutput(element, urls);
+
+    await output.unlock();
+
+    expect(sources).toHaveLength(1);
+    expect(sources[0]).toMatch(/^data:audio\/wav;base64,/);
+    expect(element.pause).toHaveBeenCalled();
+  });
+
+  it("발화 중에는 unlock이 재생을 끊지 않는다", async () => {
+    const { element, sources, urls } = createFakeElement();
+    const output = createAudioElementOutput(element, urls);
+
+    void output.play(clip());
+    await output.unlock();
+
+    expect(sources).toEqual(["blob:1"]);
+    expect(element.pause).not.toHaveBeenCalled();
+  });
+
+  it("화면 첫 터치에 unlock하고, 성공하면 더는 듣지 않는다", async () => {
+    const { element, sources, urls } = createFakeElement();
+    const target = new EventTarget();
+    unlockOnFirstGesture(createAudioElementOutput(element, urls), target);
+
+    target.dispatchEvent(new Event("pointerdown"));
+    await flush();
+    target.dispatchEvent(new Event("keydown"));
+    await flush();
+
+    expect(sources).toHaveLength(1);
+  });
+
+  it("unlock이 막히면 다음 터치에 다시 시도한다", async () => {
+    const { element, sources, urls } = createFakeElement({ blocked: true });
+    const target = new EventTarget();
+    unlockOnFirstGesture(createAudioElementOutput(element, urls), target);
+
+    target.dispatchEvent(new Event("pointerdown"));
+    await flush();
+    target.dispatchEvent(new Event("pointerdown"));
+    await flush();
+
+    expect(sources).toHaveLength(2);
   });
 });

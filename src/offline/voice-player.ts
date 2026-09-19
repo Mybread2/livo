@@ -40,7 +40,7 @@ export async function createVoicePlayer(deps: VoicePlayerDeps): Promise<Syncable
     fetchBundle,
     fetch: doFetch = globalThis.fetch,
     cache = globalThis.caches,
-    output = createAudioElementOutput(),
+    output = sharedOutput(),
   } = deps;
   const store = await cache.open(CACHE_NAME);
 
@@ -96,20 +96,47 @@ export async function createVoicePlayer(deps: VoicePlayerDeps): Promise<Syncable
   };
 }
 
-// 브라우저 전용. 재생이 끝나거나 멈추면 object URL을 해제한다
-function createAudioElementOutput(): AudioOutput {
+// 자동재생 정책: 브라우저는 사용자 조작 없이 소리를 내지 못하게 막는다. iOS는 조작 안에서 한 번 재생된 요소만 이후 조작 없이 재생한다.
+// 대상자 화면은 손을 쓰지 않으므로, 오디오 요소 하나를 계속 재사용하고 보호자의 터치 한 번(unlock)으로 그 요소의 재생 권한을 얻어 둔다.
+export type AudioElementLike = Pick<HTMLAudioElement, "src" | "onended" | "onerror" | "play" | "pause">;
+
+export interface UnlockableAudioOutput extends AudioOutput {
+  unlock(): Promise<void>; // 사용자 조작(터치·키) 핸들러 안에서 불러야 한다 — play()를 동기로 먼저 부른다
+}
+
+// 8kHz 8bit 무음 10ms
+const SILENT_WAV =
+  "data:audio/wav;base64,UklGRnQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==";
+
+const objectUrls = {
+  create: (blob: Blob) => URL.createObjectURL(blob),
+  revoke: (url: string) => URL.revokeObjectURL(url),
+};
+
+// 재생이 끝나거나 멈추면 object URL을 해제한다
+export function createAudioElementOutput(
+  element: AudioElementLike,
+  urls: { create(blob: Blob): string; revoke(url: string): void } = objectUrls,
+): UnlockableAudioOutput {
   let stopCurrent: (() => void) | null = null;
   return {
+    unlock() {
+      if (stopCurrent) return Promise.resolve(); // 발화 중이면 이미 재생 권한이 있다 — 끊지 않는다
+      element.onended = null;
+      element.onerror = null;
+      element.src = SILENT_WAV;
+      return element.play().then(() => element.pause());
+    },
     play(blob) {
-      const url = URL.createObjectURL(blob);
-      const element = new Audio(url);
+      const url = urls.create(blob);
+      element.src = url;
       return new Promise<void>((resolve, reject) => {
         let settled = false;
         const finish = (error?: unknown) => {
           if (settled) return;
           settled = true;
           if (stopCurrent === stop) stopCurrent = null;
-          URL.revokeObjectURL(url);
+          urls.revoke(url);
           if (error) reject(error);
           else resolve();
         };
@@ -128,4 +155,33 @@ function createAudioElementOutput(): AudioOutput {
       stopCurrent?.();
     },
   };
+}
+
+// 첫 터치·키 입력에 unlock한다. 성공하면 리스너를 떼고, 막히면 다음 입력에 다시 시도한다.
+// 새로고침으로 권한이 사라져도 보호자가 화면을 한 번 건드리면 소리가 돌아온다 (대상자에게 터치를 요구하지 않는다).
+export function unlockOnFirstGesture(output: UnlockableAudioOutput, target: EventTarget): void {
+  const events = ["pointerdown", "keydown"];
+  const options = { capture: true }; // 화면 요소가 이벤트 전파를 막아도 받는다
+  const handler = () => {
+    output.unlock().then(
+      () => events.forEach((type) => target.removeEventListener(type, handler, options)),
+      () => {},
+    );
+  };
+  events.forEach((type) => target.addEventListener(type, handler, options));
+}
+
+// 브라우저 전용. 모든 player가 요소 하나를 같이 쓴다 — 페이지 이동(클라이언트 라우팅) 뒤에도 얻어 둔 재생 권한이 유지된다
+let shared: UnlockableAudioOutput | null = null;
+function sharedOutput(): UnlockableAudioOutput {
+  if (!shared) {
+    shared = createAudioElementOutput(new Audio());
+    unlockOnFirstGesture(shared, window);
+  }
+  return shared;
+}
+
+// 보호자가 대상자 화면을 여는 버튼의 onClick 안에서 부른다. 이후 대상자 화면은 터치 없이 소리를 낸다.
+export function unlockVoiceOutput(): Promise<void> {
+  return sharedOutput().unlock().catch(() => {});
 }
