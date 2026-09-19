@@ -129,8 +129,22 @@
       "summary": "src/services/bundle-purge-api.ts(server-only · handleBundle → 200 {voice: VoiceBundle, recognizer: null} + Cache-Control no-store · handleRevokeConsent → 200 {purged_profile_ids} · handleDeleteSubject → 204 빈 본문 — 경로 파라미터는 parseUuid만, 권한은 getBundle·revokeConsent·deleteSubject, 오류는 핸들러 안에서 errorResponse) + bundle-purge-api.test.ts 9개(메모리 store + fake tts — 번들 200·items PHRASES 수·no-store·본문에 voice_id·참조 경로 없음/403/400 · 음성 동의 철회 200 파기 id·revoked_at 기록/남의 동의 403 쓰기 없음/400 · 삭제 204 대상자·프로필·참조 음성 사라짐/남의 대상자 403/400) · 라우트 3개(runtime nodejs, getVoiceApiContext → 핸들러, 본문 없음이라 try 없음, 빌드상 전부 ƒ Dynamic): api/bundle/[subject_id](A 스텁 대체) · api/consents/[consent_id]/revoke(POST, maxDuration 60) · api/subjects/[subject_id](DELETE만, maxDuration 60) · docs/ARCHITECTURE.md API 표에 C 라우트 6개 반영(upload-url·등록 요청 subject_id/source/ref_audio_path·precompute 재시도·번들 {voice, recognizer}·철회·대상자 삭제 — 서버 전용 이유 비고), 121줄",
       "started_at": "2026-09-19T16:59:38+0900",
       "completed_at": "2026-09-19T17:02:35+0900"
+    },
+    {
+      "step": 16,
+      "name": "voice-palette",
+      "status": "pending"
+    },
+    {
+      "step": 17,
+      "name": "subject-voice-preset",
+      "status": "pending"
+    },
+    {
+      "step": 18,
+      "name": "voice-preset-routes",
+      "status": "pending"
     }
   ],
-  "created_at": "2026-09-19T15:33:07+0900",
-  "completed_at": "2026-09-19T17:02:35+0900"
+  "created_at": "2026-09-19T15:33:07+0900"
 }
