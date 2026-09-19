@@ -23,7 +23,8 @@
       "name": "lip-points",
       "status": "completed",
       "started_at": "2026-09-19T17:56:47+0900",
-      "summary": "src/recognition/lips.ts(C1 순수 계산: LandmarkPoint 구조 타입 + extractLipFrame[얼굴 점 배열에서 입술 40점을 LIP_LANDMARK_INDICES 순서로 새 Float32Array(80)에 복사, x × width/height·y 그대로, t 전달 / null: 길이 ≤ 415·가로세로 양의 유한수 아님·t 비유한·고른 40점 저장값 비유한]) + 가짜 478점 테스트 18개(순서·가로세로비 3종·실제 원→원·t·입력 독립/호출마다 새 배열·null 4조건[416·468점 정상, 입술 밖 점 NaN은 무시]). MediaPipe 호출·import 없음(뒤 step)"
+      "summary": "src/recognition/lips.ts(C1 순수 계산: LandmarkPoint 구조 타입 + extractLipFrame[얼굴 점 배열에서 입술 40점을 LIP_LANDMARK_INDICES 순서로 새 Float32Array(80)에 복사, x × width/height·y 그대로, t 전달 / null: 길이 ≤ 415·가로세로 양의 유한수 아님·t 비유한·고른 40점 저장값 비유한]) + 가짜 478점 테스트 18개(순서·가로세로비 3종·실제 원→원·t·입력 독립/호출마다 새 배열·null 4조건[416·468점 정상, 입술 밖 점 NaN은 무시]). MediaPipe 호출·import 없음(뒤 step)",
+      "completed_at": "2026-09-19T18:01:41+0900"
     },
     {
       "step": 3,
