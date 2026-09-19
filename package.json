@@ -5,13 +5,15 @@
   "scripts": {
     "lint": "eslint .",
     "build": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "precompute:presets": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/precompute-presets.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.2",
     "eslint": "^10.11.0",
+    "tsx": "^4.23.13",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.0",
     "vitest": "^5.0.1"
