@@ -31,7 +31,8 @@
       "name": "elevenlabs-client",
       "status": "completed",
       "started_at": "2026-09-19T15:40:08+0900",
-      "summary": "src/services/elevenlabs.ts(import 'server-only' · createElevenLabs({apiKey?, fetch?, modelId?}) — 키는 옵션 ?? ELEVENLABS_API_KEY, 없거나 빈 값이면 throw · synthesizePhrase(PhraseId, voiceId)는 isPhraseId 실패 시 fetch 없이 throw, 텍스트는 getPhraseText로만, POST /v1/text-to-speech/{id}?output_format=mp3_44100_128 → {audio, charCount} · cloneVoice → POST /v1/voices/add multipart(name, files×N, remove_background_noise=true, description?) → {voiceId} · deleteVoice → DELETE /v1/voices/{id} · 비-2xx는 ElevenLabsError(status, 메시지는 작업명+상태코드만)) + elevenlabs.test.ts 9개(fake fetch), dep server-only, vitest alias server-only → test/stubs/server-only.ts"
+      "summary": "src/services/elevenlabs.ts(import 'server-only' · createElevenLabs({apiKey?, fetch?, modelId?}) — 키는 옵션 ?? ELEVENLABS_API_KEY, 없거나 빈 값이면 throw · synthesizePhrase(PhraseId, voiceId)는 isPhraseId 실패 시 fetch 없이 throw, 텍스트는 getPhraseText로만, POST /v1/text-to-speech/{id}?output_format=mp3_44100_128 → {audio, charCount} · cloneVoice → POST /v1/voices/add multipart(name, files×N, remove_background_noise=true, description?) → {voiceId} · deleteVoice → DELETE /v1/voices/{id} · 비-2xx는 ElevenLabsError(status, 메시지는 작업명+상태코드만)) + elevenlabs.test.ts 9개(fake fetch), dep server-only, vitest alias server-only → test/stubs/server-only.ts",
+      "completed_at": "2026-09-19T15:42:56+0900"
     },
     {
       "step": 4,
