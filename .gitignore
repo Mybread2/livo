@@ -10,3 +10,8 @@ phases/**/step*-output.json
 
 # python
 __pycache__/
+
+# env
+.env
+.env.local
+.env*.local
