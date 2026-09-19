@@ -61,7 +61,10 @@
     {
       "step": 7,
       "name": "voice-player",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-19T15:53:15+0900",
+      "summary": "src/offline/voice-player.ts(createVoicePlayer({fetchBundle, fetch?, cache?, output?}) → SyncableVoicePlayer · VoiceNotReadyError · AudioOutput{play(Blob) 끝나면 resolve, stop()} — Cache Storage 'livo-voice'에 /livo-voice/{version}/{phraseId} 오디오 + /livo-voice/active manifest{version, phraseIds} · 생성 시 네트워크 없이 활성 버전 오디오를 Map<phraseId, Blob>에 올림 · sync는 같은 버전이고 전 문장 준비면 no-op, 아니면 전부 다운로드(비-2xx는 서명 URL 없이 throw) 성공 후에만 cache put → manifest → 메모리 교체 → 이전 버전 키 삭제, 실패 시 이전 버전 유지 · speak는 메모리 Blob만 사용(네트워크 0회), 없으면 VoiceNotReadyError, output.stop() 후 play(최신 우선) · 기본 출력은 new Audio(objectURL), 끝남·멈춤·오류 시 revoke, 멈춘 재생은 resolve) + voice-player.test.ts 9개(메모리 CacheStorage·fake fetch·fake output)",
+      "completed_at": "2026-09-19T15:56:44+0900"
     }
   ],
   "created_at": "2026-09-19T15:33:07+0900"
