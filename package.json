@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "precompute:presets": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/precompute-presets.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
@@ -20,6 +21,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@types/node": "^20.16.10",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
@@ -28,6 +30,7 @@
     "eslint-config-next": "^14.2.35",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
+    "tsx": "^4.23.13",
     "typescript": "^5.6.2",
     "vitest": "^2.1.2"
   }

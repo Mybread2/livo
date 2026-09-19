@@ -1,0 +1,136 @@
+{
+  "project": "리보 (Livo)",
+  "phase": "voice",
+  "steps": [
+    {
+      "step": 0,
+      "name": "voice-tooling",
+      "status": "completed",
+      "started_at": "2026-09-19T15:33:07+0900",
+      "summary": "Next.js 없는 최소 TS 툴체인 — package.json(lint=eslint ., build=tsc --noEmit, test=vitest run --passWithNoTests), create-next-app형 tsconfig(@/* → src), vitest.config.ts(@ alias, node env), eslint.config.mjs(flat, js+tseslint recommended), .env.example, .gitignore에 .env*/!.env.example",
+      "completed_at": "2026-09-19T15:35:04+0900"
+    },
+    {
+      "step": 1,
+      "name": "voice-contracts",
+      "status": "completed",
+      "started_at": "2026-09-19T15:35:04+0900",
+      "summary": "src/types/voice.ts(VoicePlayer A↔C 계약, speak/isReady(phraseId: string) 원문 그대로), src/lib/phrases.ts(PHRASES 5개 as const — 합성 텍스트 유일 원본, PhraseId, isPhraseId 타입가드, getPhraseText는 미등록 id면 throw) + phrases.test.ts 6개",
+      "completed_at": "2026-09-19T15:36:09+0900"
+    },
+    {
+      "step": 2,
+      "name": "voice-schema",
+      "status": "completed",
+      "started_at": "2026-09-19T15:36:09+0900",
+      "summary": "supabase/migrations/20260919000000_voice_schema.sql(accounts·subjects·consents·voice_profiles·phrase_audio, 전부 RLS · owns_subject() security definer · voice_profiles.consent_id NOT NULL + (consent_id, subject_id) 복합 FK · source는 family/self만 — 프리셋은 DB 행 없이 phrase-audio/presets/{preset_key}/{phrase_id}.mp3 · voice_profiles/phrase_audio는 select만, 쓰기는 service_role · private bucket voice-refs/phrase-audio, objects 정책 없음), supabase/tests/pglite.ts(createTestDb: Supabase role·auth·storage 스텁 + 기본 grant 후 마이그레이션 이름순 적용, asUser) + voice-schema.test.ts 11개, devDep @electric-sql/pglite",
+      "completed_at": "2026-09-19T15:40:08+0900"
+    },
+    {
+      "step": 3,
+      "name": "elevenlabs-client",
+      "status": "completed",
+      "started_at": "2026-09-19T15:40:08+0900",
+      "summary": "src/services/elevenlabs.ts(import 'server-only' · createElevenLabs({apiKey?, fetch?, modelId?}) — 키는 옵션 ?? ELEVENLABS_API_KEY, 없거나 빈 값이면 throw · synthesizePhrase(PhraseId, voiceId)는 isPhraseId 실패 시 fetch 없이 throw, 텍스트는 getPhraseText로만, POST /v1/text-to-speech/{id}?output_format=mp3_44100_128 → {audio, charCount} · cloneVoice → POST /v1/voices/add multipart(name, files×N, remove_background_noise=true, description?) → {voiceId} · deleteVoice → DELETE /v1/voices/{id} · 비-2xx는 ElevenLabsError(status, 메시지는 작업명+상태코드만)) + elevenlabs.test.ts 9개(fake fetch), dep server-only, vitest alias server-only → test/stubs/server-only.ts",
+      "completed_at": "2026-09-19T15:42:56+0900"
+    },
+    {
+      "step": 4,
+      "name": "precompute",
+      "status": "completed",
+      "started_at": "2026-09-19T15:42:57+0900",
+      "summary": "src/services/voice-store.ts(server-only · VoiceStore{putAudio(path, ArrayBuffer) — phrase-audio bucket upsert audio/mpeg, listPhraseAudio(voiceProfileId), upsertPhraseAudio(row) — onConflict voice_profile_id,phrase_id} + createSupabaseVoiceStore(service_role SupabaseClient), 조회 행은 isPhraseId로 거름) · src/services/testing/memory-voice-store.ts(createMemoryVoiceStore() — VoiceStore + audio Map·rows 노출) · src/services/presets.ts(PRESET_KEYS ['default'], getPresetVoiceId는 ELEVENLABS_PRESET_VOICE_ID 없거나 빈 값이면 throw, presetAudioPath → presets/{key}/{phraseId}.mp3) · src/services/precompute.ts(profileAudioPath → {subjectId}/{voiceProfileId}/{phraseId}.mp3 · precomputeProfileAudio — PHRASES 순차, 문장마다 합성→업로드→행 upsert, 기존 행 있으면 skipped, 실패 시 그대로 throw → {synthesized, skipped} · precomputePresetAudio — 업로드만, 행 없음) + precompute.test.ts 8개, dep @supabase/supabase-js",
+      "completed_at": "2026-09-19T15:45:10+0900"
+    },
+    {
+      "step": 5,
+      "name": "voice-registration",
+      "status": "completed",
+      "started_at": "2026-09-19T15:45:10+0900",
+      "summary": "src/services/voice-store.ts(ConsentKind·VoiceSource('self'|'family') 타입 + VoiceStore에 ownsSubject(subjects⨝accounts!inner)·listActiveConsents(revoked_at is null)·createRefUploadUrl/downloadRef/deleteRef(voice-refs bucket)·insertVoiceProfile→{id}·clearRefAudioPath·signedAudioUrl(phrase-audio) 추가) · memory-voice-store.ts(refs·profiles·consents 노출, seedSubject(userId)→subjectId·seedConsent(subjectId, kind, {grantedAt?, revokedAt?})→id, insertVoiceProfile은 (consent_id, subject_id) FK 규칙 흉내, signedAudioUrl은 없는 오디오면 throw) · src/services/voice-profile.ts(server-only · ForbiddenError · ConsentRequiredError(missing) · createRefAudioUpload — 소유·동의 확인 후 '{subjectId}/{randomUUID}' 서명 업로드 URL · registerVoiceProfile — 소유 → refAudioPath가 '{subjectId}/<한 단계>' 아니면 Forbidden → 음성 동의(self=voice_self, family=voice_family)+overseas_transfer 없으면 ConsentRequired(다운로드·클론 전) → downloadRef → cloneVoice('livo-{subjectId}') → insertVoiceProfile(가장 최근 음성 동의, 실패 시 deleteVoice 후 원래 오류 rethrow) → voice_retention 없으면 deleteRef+clearRefAudioPath → precomputeProfileAudio → preview_url = PHRASES[0] signedAudioUrl 600초 → {profile_id, voice_id, preview_url}) + voice-profile.test.ts 16개",
+      "completed_at": "2026-09-19T15:49:55+0900"
+    },
+    {
+      "step": 6,
+      "name": "bundle",
+      "status": "completed",
+      "started_at": "2026-09-19T15:49:56+0900",
+      "summary": "src/types/voice-bundle.ts(VoiceBundle{version: voice_profile_id | 'preset:default', source: preset/self/family, items: {phraseId, url}[] PHRASES 순서, expiresAt} — voice_id·참조 경로 없음) · VoiceStore.listVoiceProfiles(subjectId) → {id, source, createdAt}[] created_at desc(Supabase + 메모리) · memory-voice-store에 profiles.createdAt·seedVoiceProfile(subjectId, source, {createdAt?})(음성 동의 함께 시드) · src/services/bundle.ts(server-only · getBundle({store, now?}, {userId, subjectId, expiresInSec=3600}) — ownsSubject 아니면 ForbiddenError(서명 전) → 최신순으로 PHRASES 전부 phrase_audio 있는 첫 프로필(부분 완료 건너뜀, 경로는 phrase_audio.audio_path) · 없으면 presets/default 프리셋 → 문장별 signedAudioUrl, expiresAt = now + expiresInSec(서명 전 측정)) + bundle.test.ts 7개, voice-profile.test.ts toEqual에 createdAt 반영",
+      "completed_at": "2026-09-19T15:53:14+0900"
+    },
+    {
+      "step": 7,
+      "name": "voice-player",
+      "status": "completed",
+      "started_at": "2026-09-19T15:53:15+0900",
+      "summary": "src/offline/voice-player.ts(createVoicePlayer({fetchBundle, fetch?, cache?, output?}) → SyncableVoicePlayer · VoiceNotReadyError · AudioOutput{play(Blob) 끝나면 resolve, stop()} — Cache Storage 'livo-voice'에 /livo-voice/{version}/{phraseId} 오디오 + /livo-voice/active manifest{version, phraseIds} · 생성 시 네트워크 없이 활성 버전 오디오를 Map<phraseId, Blob>에 올림 · sync는 같은 버전이고 전 문장 준비면 no-op, 아니면 전부 다운로드(비-2xx는 서명 URL 없이 throw) 성공 후에만 cache put → manifest → 메모리 교체 → 이전 버전 키 삭제, 실패 시 이전 버전 유지 · speak는 메모리 Blob만 사용(네트워크 0회), 없으면 VoiceNotReadyError, output.stop() 후 play(최신 우선) · 기본 출력은 new Audio(objectURL), 끝남·멈춤·오류 시 revoke, 멈춘 재생은 resolve) + voice-player.test.ts 9개(메모리 CacheStorage·fake fetch·fake output)",
+      "completed_at": "2026-09-19T15:57:19+0900"
+    },
+    {
+      "step": 8,
+      "name": "revoke-delete-rls",
+      "status": "completed",
+      "started_at": "2026-09-19T16:29:01+0900",
+      "summary": "supabase/migrations/20260919010000_server_only_revoke_delete.sql(consents_update · subjects_delete 정책 drop — 동의 철회·대상자 삭제는 목소리 파기를 동반해야 하므로 service_role 서버 함수만, consents delete 정책 없음 유지) + voice-schema.test.ts 4개 추가(authenticated가 자기 대상자 동의 update해도 revoked_at 그대로 · 자기 대상자 delete해도 행 남음 · subjects insert/select/update·consents insert/select 회귀 · superuser는 철회 1행·삭제 1행)",
+      "completed_at": "2026-09-19T16:30:51+0900"
+    },
+    {
+      "step": 9,
+      "name": "bundle-consent-guard",
+      "status": "completed",
+      "started_at": "2026-09-19T16:30:52+0900",
+      "summary": "VoiceStore.listVoiceProfiles 반환에 consentId 추가(Supabase consent_id + 메모리) · getBundle의 chooseVoice가 listActiveConsents를 대상자당 1회 조회해 철회되지 않은 overseas_transfer가 없으면 프로필 후보 없음, 프로필 consentId가 활성 동의에 없으면 건너뜀 → 조건 맞는 완성 프로필 없으면 프리셋(에러 없음) · bundle.test.ts setup에 overseas_transfer 시드 + 테스트 3개(음성 동의 철회 → 프리셋 · 최신 철회 + 이전 유효 → 이전, 동의 조회 1회 · overseas_transfer 철회 → 프리셋), 기존 7개는 동의 유효 회귀로 유지",
+      "completed_at": "2026-09-19T16:33:08+0900"
+    },
+    {
+      "step": 10,
+      "name": "voice-purge",
+      "status": "completed",
+      "summary": "VoiceStore에 getVoiceProfile·getConsent·revokeConsent(revoked_at null일 때만)·deleteAudio(phrase-audio, 빈 배열 no-op)·listRefs(voice-refs '{subjectId}/' 100개씩 페이지)·deleteVoiceProfile·deleteSubject(FK cascade) 추가(Supabase + 메모리, 메모리는 cascade 흉내·Storage는 남김) · src/services/purge.ts(server-only · purgeVoiceProfile — 없으면 no-op → deleteVoice(ElevenLabsError 404만 무시) → listPhraseAudio 경로 deleteAudio → refAudioPath 있으면 deleteRef → 마지막에 행 삭제, 멱등 · revokeConsent — 없는/남의 동의 ForbiddenError(쓰기 0) → 파기 전 철회 기록 → voice_self/family는 그 동의의 프로필, overseas_transfer는 전부 purge, voice_retention은 listRefs 전부 deleteRef + 전 프로필 clearRefAudioPath, 그 외는 기록만, 재호출 시 파기 재수행 → {purgedProfileIds} · deleteSubject — 소유 확인 → 프로필 전부 purge → 등록 안 된 업로드 포함 참조 음성 전부 삭제 → 마지막에 대상자 행 삭제) + purge.test.ts 14개",
+      "started_at": "2026-09-19T16:33:09+0900",
+      "completed_at": "2026-09-19T16:37:55+0900"
+    },
+    {
+      "step": 11,
+      "name": "precompute-resume",
+      "status": "completed",
+      "summary": "src/services/voice-profile.ts에 PrecomputeIncompleteError(profileId, cause) — registerVoiceProfile의 precomputeProfileAudio 실패 시 던짐(클론·저장·원본 파기 동작 불변, 프로필·voice 삭제 안 함) · resumePrecompute({store, tts}, {userId, subjectId, voiceProfileId}) — ownsSubject 아니면 ForbiddenError → 프로필 없거나 subjectId 다르면 ForbiddenError → 프로필 consentId와 overseas_transfer가 활성 동의에 없으면 ConsentRequiredError(missing, 합성 0회) → precomputeProfileAudio(providerVoiceId) 결과 그대로(입력에 문장·텍스트 없음) + voice-profile.test.ts 6개(3번째 문장 실패 → profileId·2행 · 재시도 skipped 2/synthesized 3·5행 · 완료 프로필 전부 skipped·합성 0회 · voice_self/overseas_transfer 철회 → ConsentRequired · 남의 대상자/다른 대상자 프로필/없는 프로필 → Forbidden)",
+      "started_at": "2026-09-19T16:37:55+0900",
+      "completed_at": "2026-09-19T16:40:09+0900"
+    },
+    {
+      "step": 12,
+      "name": "preset-script",
+      "status": "completed",
+      "summary": "scripts/preset-env.ts(REQUIRED_ENV 4개 · missingEnv(env) — 빈 문자열도 없음 취급, 이름만 반환, 부작용 없음) + preset-env.test.ts 5개 · scripts/precompute-presets.ts(인자 없음 — missingEnv 있으면 이름만 stderr·exit 1(네트워크 0회) → service role createClient(persistSession false) → createSupabaseVoiceStore·createElevenLabs() → PRESET_KEYS마다 precomputePresetAudio → 완료 출력, 실패 시 exit 1) · package.json precompute:presets = tsx --conditions=react-server --env-file-if-exists=.env.local (tsx devDep, 플래그 전달·@/ alias·빈 환경변수가 env 파일보다 우선함을 실측) · eslint.config.mjs에서 scripts/ 무시 제거",
+      "started_at": "2026-09-19T16:40:10+0900",
+      "completed_at": "2026-09-19T16:43:28+0900"
+    },
+    {
+      "step": 13,
+      "name": "api-foundation",
+      "status": "completed",
+      "summary": "src/services/supabase-admin.ts(server-only · createSupabaseAdmin — NEXT_PUBLIC_SUPABASE_URL+SUPABASE_SERVICE_ROLE_KEY, persistSession·autoRefreshToken false, 없으면 throw) · src/services/api.ts(server-only · VoiceApiContext{userId, store, tts} · BadRequestError · parseUuid(형식 아니면 400, 대문자는 소문자로 — Storage 경로 대소문자 불일치로 파기 누락 방지) · parseSource(self/family만) · readJsonObject(JSON 객체만) · errorResponse — Bad 400 bad_request / Forbidden 403 / ConsentRequired 409 {missing} / PrecomputeIncomplete 502 {profile_id} / ElevenLabs 502 upstream / 그 외 500 internal, 본문에 메시지 없음, 5xx만 console.error · getVoiceApiContext — 서버 클라이언트 null → 503 not_configured, getUser()에 사용자 없으면 401(서버 키 없이 판정), 있으면 {userId, createSupabaseVoiceStore(createSupabaseAdmin()), createElevenLabs()}, 서버 키 누락은 throw 대신 503 not_configured(라우트가 try 밖에서 부르므로)) + api.test.ts 43개(vi.mock 서버 클라이언트, env stub, fetch stub으로 네트워크 0회 확인)",
+      "started_at": "2026-09-19T16:52:15+0900",
+      "completed_at": "2026-09-19T16:56:29+0900"
+    },
+    {
+      "step": 14,
+      "name": "voice-profile-routes",
+      "status": "completed",
+      "summary": "src/services/voice-profile-api.ts(server-only · handleCreateUpload{subject_id, source} → 200 {path, signed_url, token} · handleRegister{subject_id, source, ref_audio_path(문자열 아니면 400, 경로 규칙은 registerVoiceProfile)} → 201 {profile_id, voice_id, preview_url} · handleResume(profileId, {subject_id}) → 200 {synthesized, skipped} — parseUuid·parseSource로만 검증, 본문의 text·phrase_id·voice_id 등 알 수 없는 필드는 읽지 않음, 오류는 전부 각 핸들러 안에서 errorResponse) + voice-profile-api.test.ts 17개(메모리 store + fake tts — 업로드 URL 200/409 missing/403/400 · 업로드→등록 201 · 3번째 문장 실패 502 precompute_incomplete → 그 profile_id 재시도 200 남은 13문장만 · 잘못된 uuid·ref_audio_path 400 · 다른 대상자 경로 403 · text/voice_id 넣어도 합성은 PHRASES 전체 + 클론 voice) · 라우트 3개(runtime nodejs, getVoiceApiContext → readJsonObject → 핸들러, catch errorResponse): api/voice-profile/upload-url · api/voice-profile(A 스텁 대체, maxDuration 60) · api/voice-profile/[profile_id]/precompute(maxDuration 60, Next 14 동기 params)",
+      "started_at": "2026-09-19T16:56:29+0900",
+      "completed_at": "2026-09-19T16:59:37+0900"
+    },
+    {
+      "step": 15,
+      "name": "bundle-purge-routes",
+      "status": "completed",
+      "summary": "src/services/bundle-purge-api.ts(server-only · handleBundle → 200 {voice: VoiceBundle, recognizer: null} + Cache-Control no-store · handleRevokeConsent → 200 {purged_profile_ids} · handleDeleteSubject → 204 빈 본문 — 경로 파라미터는 parseUuid만, 권한은 getBundle·revokeConsent·deleteSubject, 오류는 핸들러 안에서 errorResponse) + bundle-purge-api.test.ts 9개(메모리 store + fake tts — 번들 200·items PHRASES 수·no-store·본문에 voice_id·참조 경로 없음/403/400 · 음성 동의 철회 200 파기 id·revoked_at 기록/남의 동의 403 쓰기 없음/400 · 삭제 204 대상자·프로필·참조 음성 사라짐/남의 대상자 403/400) · 라우트 3개(runtime nodejs, getVoiceApiContext → 핸들러, 본문 없음이라 try 없음, 빌드상 전부 ƒ Dynamic): api/bundle/[subject_id](A 스텁 대체) · api/consents/[consent_id]/revoke(POST, maxDuration 60) · api/subjects/[subject_id](DELETE만, maxDuration 60) · docs/ARCHITECTURE.md API 표에 C 라우트 6개 반영(upload-url·등록 요청 subject_id/source/ref_audio_path·precompute 재시도·번들 {voice, recognizer}·철회·대상자 삭제 — 서버 전용 이유 비고), 121줄",
+      "started_at": "2026-09-19T16:59:38+0900",
+      "completed_at": "2026-09-19T17:02:35+0900"
+    }
+  ],
+  "created_at": "2026-09-19T15:33:07+0900",
+  "completed_at": "2026-09-19T17:02:35+0900"
+}

@@ -84,9 +84,13 @@ C2 구간 → C10 음소열 + C11 대화 맥락 → POST /api/free-utterance →
 |--------------|------|------|------|
 | `POST /api/utterances/sync` | 단말에 쌓인 발화 로그 | `{synced}` | 실패해도 발화에 영향 없음. 다음 연결 때 재시도 |
 | `POST /api/calibration/sample` | 좌표 시퀀스, phrase_id, session_id | `{sample_id, quality}` | 품질 미달이면 즉시 재녹화 유도 |
-| `POST /api/voice-profile` | 오디오(signed upload), consent_id | `{profile_id, voice_id, preview_url}` | 등록 → 미리듣기 → 고정 문장 사전 합성 |
+| `POST /api/voice-profile/upload-url` | subject_id, source | `{path, signed_url, token}` | 참조 음성 업로드용 서명 URL (private bucket) |
+| `POST /api/voice-profile` | subject_id, source, ref_audio_path | `{profile_id, voice_id, preview_url}` | 등록 → 미리듣기 → 고정 문장 사전 합성. 동의는 서버가 찾는다 |
+| `POST /api/voice-profile/:profile_id/precompute` | subject_id | `{synthesized, skipped}` | 사전 합성이 중간에 실패했을 때(502) 남은 문장만 재시도 |
 | `POST /api/train` | subject_id | `{job_id}` | CNN 방식일 때만. 완료는 Supabase Realtime |
-| `GET /api/bundle/:subject_id` | — | 인식기·사전 합성 오디오 서명 URL | 오프라인 발화에 필요한 것을 내려받음 |
+| `GET /api/bundle/:subject_id` | — | `{voice, recognizer}` | 오프라인 발화에 필요한 것을 내려받음. 서명 URL이라 `no-store`, voice_id 없음 |
+| `POST /api/consents/:consent_id/revoke` | — | `{purged_profile_ids}` | 철회·대상자 삭제는 목소리 파기(ElevenLabs·Storage)를 동반해야 해서 RLS로 막고 이 서버 경로만 둔다 |
+| `DELETE /api/subjects/:subject_id` | — | 204 | 위와 같음. 프로필 전부 파기 후 삭제 |
 | `POST /api/free-utterance` (Stage 3) | 입 영역 데이터, subject_id, 대화 맥락 | `{candidates: [{candidate_id, text}×3]}` | 후보 생성만 |
 | `POST /api/free-utterance/confirm` (Stage 3) | candidate_id | 오디오 스트림 | 텍스트를 직접 받는 합성 경로는 없다 |
 

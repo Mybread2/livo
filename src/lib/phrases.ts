@@ -11,7 +11,9 @@ export interface Phrase {
   emergency: boolean;
 }
 
-export const PHRASES: readonly Phrase[] = [
+// satisfies로 선언해 id 리터럴 타입을 살린다 — PhraseId가 등록 문장 id의 유니언이 된다.
+// 합성 함수(src/services)는 텍스트가 아니라 PhraseId만 받아 여기서 텍스트를 찾는다 (임의 텍스트 합성 경로 차단).
+export const PHRASES = [
   // T0 응급 — 항상 포함(제약)
   { id: "pain", text: "아파요", tier: "T0", emergency: true },
   { id: "cant-breathe", text: "숨이 안 쉬어져요", tier: "T0", emergency: true },
@@ -31,10 +33,22 @@ export const PHRASES: readonly Phrase[] = [
   { id: "no", text: "아니요", tier: "T3", emergency: false },
   { id: "thanks", text: "고마워요", tier: "T3", emergency: false },
   { id: "wait", text: "잠깐만요", tier: "T3", emergency: false },
-] as const;
+] as const satisfies readonly Phrase[];
+
+export type PhraseId = (typeof PHRASES)[number]["id"];
 
 export function getPhrase(id: string): Phrase | undefined {
   return PHRASES.find((p) => p.id === id);
+}
+
+export function isPhraseId(value: unknown): value is PhraseId {
+  return typeof value === "string" && PHRASES.some((p) => p.id === value);
+}
+
+export function getPhraseText(id: PhraseId): string {
+  const phrase = getPhrase(id);
+  if (!phrase) throw new Error(`등록되지 않은 문장 id: ${String(id)}`);
+  return phrase.text;
 }
 
 /** 프로토타입 시작 단어 셋(§업무지시서). B는 우선 이 부분집합부터 분류한다. */
