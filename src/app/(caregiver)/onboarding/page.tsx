@@ -58,9 +58,7 @@ export default function OnboardingPage() {
       {step === "voice" && (
         <VoiceStep subjectId={subjectId} onNext={() => go("calibration")} />
       )}
-      {step === "calibration" && (
-        <CalibrationStep subjectId={subjectId} onNext={() => go("done")} />
-      )}
+      {step === "calibration" && <CalibrationStep onNext={() => go("done")} />}
       {step === "done" && <Done />}
     </Frame>
   );
@@ -250,15 +248,15 @@ function VoiceStep({ subjectId, onNext }: { subjectId: string; onNext: () => voi
   );
 }
 
-function CalibrationStep({ subjectId, onNext }: { subjectId: string; onNext: () => void }) {
+function CalibrationStep({ onNext }: { onNext: () => void }) {
   return (
     <>
       <h1 style={{ font: "700 20px/1.3 Pretendard", margin: 0 }}>따라하기 (캘리브레이션)</h1>
       <p style={{ color: "#5c5f67", fontSize: 13.5, margin: 0 }}>
-        대상자 태블릿에서 문장이 뜨면 소리 없이 입모양만 따라 합니다. 다음 문장은 자동으로 넘어갑니다(손 사용 없음).
+        대상자 태블릿에서 문장이 뜨면 소리 없이 입모양만 따라 합니다. 다음 문장은 자동으로 넘어갑니다(손 사용 없음). 이 과정에서 본인 입모양 템플릿이 기기에 저장됩니다.
       </p>
-      <Link href={`/subject?subject=${subjectId}`} style={{ ...primary, textAlign: "center", textDecoration: "none", display: "block" }}>
-        대상자 화면 열기
+      <Link href="/calibration" style={{ ...primary, textAlign: "center", textDecoration: "none", display: "block" }}>
+        캘리브레이션 시작
       </Link>
       <button
         style={{ background: "#fff", border: "1px solid rgba(21,22,26,0.2)", borderRadius: 10, padding: 14, fontWeight: 700 }}
