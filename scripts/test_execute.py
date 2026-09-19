@@ -437,8 +437,12 @@ class TestInvokeClaude:
         assert "-p" in cmd
         assert "--dangerously-skip-permissions" in cmd
         assert "--output-format" in cmd
-        assert "PREAMBLE" in cmd[-1]
-        assert "UI를 구현하세요" in cmd[-1]
+        # 프롬프트는 argv가 아니라 stdin으로 넘긴다 (Windows 명령줄 32,767자 한도)
+        assert all("PREAMBLE" not in c for c in cmd)
+        prompt = mock_run.call_args[1]["input"]
+        assert "PREAMBLE" in prompt
+        assert "UI를 구현하세요" in prompt
+        assert mock_run.call_args[1]["encoding"] == "utf-8"
 
     def test_saves_output_json(self, executor):
         mock_result = MagicMock(returncode=0, stdout='{"ok": true}', stderr="")
