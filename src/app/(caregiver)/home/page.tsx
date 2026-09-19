@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAccountStore } from "@/services/account-store";
+import { ensureAccount, addSubject } from "@/services/account";
 
-// 보호자 홈 대시보드(와이어프레임 s16). 주요 동작 2개만 큰 버튼으로.
+// 보호자 홈 대시보드(와이어프레임 s16 · s18). 실제 대상자 목록 + 추가.
 // 발화 로그는 횟수·시각만 — 좌표·오디오는 저장하지 않는다.
 const btn: React.CSSProperties = {
   display: "block",
@@ -13,16 +16,41 @@ const btn: React.CSSProperties = {
   textDecoration: "none",
 };
 
+// 대상자 추가 서버 액션.
+async function addSubjectAction(formData: FormData) {
+  "use server";
+  const name = String(formData.get("name") ?? "");
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+  const store = createSupabaseAccountStore(supabase);
+  const account = await ensureAccount(store, user.id);
+  if (name.trim() === "") return;
+  await addSubject(store, account.id, name);
+  revalidatePath("/home");
+}
+
 export default async function HomePage() {
   const supabase = getSupabaseServerClient();
-  // Supabase 미연결이면(로컬 초기) 가드를 건너뛰고 화면만 보여준다.
+
+  // Supabase 미연결이면(로컬 초기) 가드를 건너뛰고 빈 상태만 보여준다.
   let email: string | null = null;
+  let subjects: { id: string; displayName: string }[] = [];
   if (supabase) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) redirect("/login");
     email = user.email ?? null;
+    const store = createSupabaseAccountStore(supabase);
+    const account = await ensureAccount(store, user.id);
+    subjects = (await store.listSubjects(account.id)).map((s) => ({
+      id: s.id,
+      displayName: s.displayName,
+    }));
   }
 
   return (
@@ -73,20 +101,70 @@ export default async function HomePage() {
         </div>
       )}
 
-      <div
-        style={{
-          border: "1px solid rgba(21,22,26,0.13)",
-          borderRadius: 10,
-          padding: 12,
-        }}
-      >
-        <div style={{ fontWeight: 600, fontSize: 15 }}>김O수 님</div>
-        <div style={{ color: "#5c5f67", fontSize: 13 }}>
-          문장 15개 · 프리셋 목소리
+      {/* 대상자 목록 */}
+      {subjects.length === 0 ? (
+        <div
+          style={{
+            border: "1px dashed rgba(21,22,26,0.22)",
+            borderRadius: 10,
+            padding: 16,
+            color: "#6d707a",
+            fontSize: 13.5,
+          }}
+        >
+          아직 등록된 대상자가 없습니다. 아래에서 추가해 주세요.
         </div>
-      </div>
+      ) : (
+        subjects.map((s) => (
+          <div
+            key={s.id}
+            style={{
+              border: "1px solid rgba(21,22,26,0.13)",
+              borderRadius: 10,
+              padding: 12,
+            }}
+          >
+            <div style={{ fontWeight: 600, fontSize: 15 }}>{s.displayName} 님</div>
+            <div style={{ color: "#5c5f67", fontSize: 13 }}>
+              온보딩 · 문장 · 목소리는 아래에서 설정합니다
+            </div>
+          </div>
+        ))
+      )}
 
-      <Link href="/phrases" style={{ ...btn, background: "#2A52BE", color: "#fff" }}>
+      {/* 대상자 추가 (계정 1 : 대상자 N) */}
+      <form
+        action={addSubjectAction}
+        style={{ display: "flex", gap: 8, marginTop: 2 }}
+      >
+        <input
+          name="name"
+          placeholder="대상자 이름 (예: 김O수)"
+          required
+          style={{
+            flex: 1,
+            border: "1px solid rgba(21,22,26,0.2)",
+            borderRadius: 10,
+            padding: 12,
+            fontSize: 14,
+          }}
+        />
+        <button
+          type="submit"
+          style={{
+            background: "#fff",
+            border: "1px solid rgba(21,22,26,0.2)",
+            borderRadius: 10,
+            padding: "0 16px",
+            fontWeight: 700,
+            fontSize: 14,
+          }}
+        >
+          ＋ 추가
+        </button>
+      </form>
+
+      <Link href="/phrases" style={{ ...btn, background: "#2A52BE", color: "#fff", marginTop: 6 }}>
         문장 관리
       </Link>
       <Link
@@ -101,15 +179,7 @@ export default async function HomePage() {
         목소리 설정
       </Link>
 
-      <Link
-        href="/subject"
-        style={{
-          ...btn,
-          background: "#0a0a0c",
-          color: "#fff",
-          marginTop: 6,
-        }}
-      >
+      <Link href="/subject" style={{ ...btn, background: "#0a0a0c", color: "#fff", marginTop: 6 }}>
         대상자 화면 열기
       </Link>
     </main>
