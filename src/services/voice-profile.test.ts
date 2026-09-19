@@ -62,6 +62,7 @@ describe("registerVoiceProfile", () => {
         refAudioPath: null,
         providerVoiceId: "cloned_v",
         consentId: consentIds.get("voice_self"),
+        createdAt: expect.any(String),
       },
     ]);
     expect(result.voice_id).toBe("cloned_v");

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { ConsentKind, NewVoiceProfile, PhraseAudioRow, VoiceStore } from "../voice-store";
+import type { ConsentKind, NewVoiceProfile, PhraseAudioRow, VoiceSource, VoiceStore } from "../voice-store";
 
 export interface MemoryConsent {
   id: string;
@@ -12,6 +12,7 @@ export interface MemoryConsent {
 export interface MemoryVoiceProfile extends Omit<NewVoiceProfile, "refAudioPath"> {
   id: string;
   refAudioPath: string | null;
+  createdAt: string;
 }
 
 // 테스트 전용 VoiceStore. 저장소 상태(audio·rows·refs·profiles)를 그대로 노출하고, 계정·대상자·동의 시드 헬퍼를 둔다.
@@ -71,8 +72,15 @@ export function createMemoryVoiceStore() {
         throw new Error("voice_profiles 저장 실패: 대상자의 동의가 아니다");
       }
       const id = randomUUID();
-      profiles.push({ id, ...row });
+      profiles.push({ id, ...row, createdAt: new Date().toISOString() });
       return { id };
+    },
+
+    async listVoiceProfiles(subjectId) {
+      return profiles
+        .filter((p) => p.subjectId === subjectId)
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+        .map(({ id, source, createdAt }) => ({ id, source, createdAt }));
     },
 
     async clearRefAudioPath(voiceProfileId) {
@@ -109,5 +117,20 @@ export function createMemoryVoiceStore() {
     return id;
   }
 
-  return { ...store, audio, refs, rows, profiles, consents, seedSubject, seedConsent };
+  // 음성 동의와 함께 프로필을 만든다 (consent_id NOT NULL). createdAt으로 최신 순서를 정한다
+  function seedVoiceProfile(subjectId: string, source: VoiceSource, opts: { createdAt?: string } = {}): string {
+    const id = randomUUID();
+    profiles.push({
+      id,
+      subjectId,
+      source,
+      refAudioPath: null,
+      providerVoiceId: `voice-${id}`,
+      consentId: seedConsent(subjectId, source === "self" ? "voice_self" : "voice_family"),
+      createdAt: opts.createdAt ?? new Date().toISOString(),
+    });
+    return id;
+  }
+
+  return { ...store, audio, refs, rows, profiles, consents, seedSubject, seedConsent, seedVoiceProfile };
 }

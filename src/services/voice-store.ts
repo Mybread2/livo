@@ -46,6 +46,8 @@ export interface VoiceStore {
   downloadRef(path: string): Promise<Blob>;
   deleteRef(path: string): Promise<void>;
   insertVoiceProfile(row: NewVoiceProfile): Promise<{ id: string }>;
+  // created_at desc (최신 먼저)
+  listVoiceProfiles(subjectId: string): Promise<{ id: string; source: VoiceSource; createdAt: string }[]>;
   clearRefAudioPath(voiceProfileId: string): Promise<void>;
   signedAudioUrl(path: string, expiresInSec: number): Promise<string>;
 }
@@ -144,6 +146,16 @@ export function createSupabaseVoiceStore(admin: SupabaseClient): VoiceStore {
         .single();
       if (error) throw new Error(`voice_profiles 저장 실패: ${error.message}`);
       return { id: data.id };
+    },
+
+    async listVoiceProfiles(subjectId) {
+      const { data, error } = await admin
+        .from("voice_profiles")
+        .select("id, source, created_at")
+        .eq("subject_id", subjectId)
+        .order("created_at", { ascending: false });
+      if (error) throw new Error(`voice_profiles 조회 실패: ${error.message}`);
+      return data.map((r) => ({ id: r.id, source: r.source, createdAt: r.created_at }));
     },
 
     async clearRefAudioPath(voiceProfileId) {
