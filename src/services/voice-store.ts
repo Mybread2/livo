@@ -3,6 +3,28 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { isPhraseId, type PhraseId } from "@/lib/phrases";
 
 const AUDIO_BUCKET = "phrase-audio";
+const REF_BUCKET = "voice-refs";
+
+// consents.kind check 제약과 같다
+export type ConsentKind =
+  | "biometric"
+  | "voice_self"
+  | "voice_family"
+  | "research_use"
+  | "overseas_transfer"
+  | "research_video"
+  | "voice_retention";
+
+// voice_profiles.source check 제약과 같다. 'preset'은 없다 — 프리셋은 voice_profiles에 넣지 않는다
+export type VoiceSource = "self" | "family";
+
+export interface NewVoiceProfile {
+  subjectId: string;
+  source: VoiceSource;
+  refAudioPath: string;
+  providerVoiceId: string;
+  consentId: string;
+}
 
 export interface PhraseAudioRow {
   subjectId: string;
@@ -17,9 +39,19 @@ export interface VoiceStore {
   putAudio(path: string, data: ArrayBuffer): Promise<void>;
   listPhraseAudio(voiceProfileId: string): Promise<PhraseAudioRow[]>;
   upsertPhraseAudio(row: PhraseAudioRow): Promise<void>;
+  ownsSubject(userId: string, subjectId: string): Promise<boolean>;
+  // 철회되지 않은(revoked_at is null) 동의만
+  listActiveConsents(subjectId: string): Promise<{ id: string; kind: ConsentKind; grantedAt: string }[]>;
+  createRefUploadUrl(path: string): Promise<{ signedUrl: string; token: string }>;
+  downloadRef(path: string): Promise<Blob>;
+  deleteRef(path: string): Promise<void>;
+  insertVoiceProfile(row: NewVoiceProfile): Promise<{ id: string }>;
+  clearRefAudioPath(voiceProfileId: string): Promise<void>;
+  signedAudioUrl(path: string, expiresInSec: number): Promise<string>;
 }
 
-// admin은 service_role 클라이언트여야 한다. phrase_audio 쓰기와 phrase-audio bucket 접근에 정책이 없다 (RLS로 막혀 있다).
+// admin은 service_role 클라이언트여야 한다. voice_profiles·phrase_audio 쓰기와 두 bucket 접근에 정책이 없다 (RLS로 막혀 있다).
+// service_role은 RLS를 우회하므로 소유 확인은 ownsSubject로 호출하는 쪽(voice-profile.ts)이 한다.
 export function createSupabaseVoiceStore(admin: SupabaseClient): VoiceStore {
   return {
     async putAudio(path, data) {
@@ -58,6 +90,74 @@ export function createSupabaseVoiceStore(admin: SupabaseClient): VoiceStore {
         { onConflict: "voice_profile_id,phrase_id" },
       );
       if (error) throw new Error(`phrase_audio 저장 실패: ${error.message}`);
+    },
+
+    async ownsSubject(userId, subjectId) {
+      const { data, error } = await admin
+        .from("subjects")
+        .select("id, accounts!inner(user_id)")
+        .eq("id", subjectId)
+        .eq("accounts.user_id", userId)
+        .maybeSingle();
+      if (error) throw new Error(`대상자 소유 확인 실패: ${error.message}`);
+      return data !== null;
+    },
+
+    async listActiveConsents(subjectId) {
+      const { data, error } = await admin
+        .from("consents")
+        .select("id, kind, granted_at")
+        .eq("subject_id", subjectId)
+        .is("revoked_at", null);
+      if (error) throw new Error(`동의 조회 실패: ${error.message}`);
+      return data.map((r) => ({ id: r.id, kind: r.kind, grantedAt: r.granted_at }));
+    },
+
+    async createRefUploadUrl(path) {
+      const { data, error } = await admin.storage.from(REF_BUCKET).createSignedUploadUrl(path);
+      if (error) throw new Error(`참조 음성 업로드 URL 발급 실패: ${error.message}`);
+      return { signedUrl: data.signedUrl, token: data.token };
+    },
+
+    async downloadRef(path) {
+      const { data, error } = await admin.storage.from(REF_BUCKET).download(path);
+      if (error) throw new Error(`참조 음성 다운로드 실패: ${error.message}`);
+      return data;
+    },
+
+    async deleteRef(path) {
+      const { error } = await admin.storage.from(REF_BUCKET).remove([path]);
+      if (error) throw new Error(`참조 음성 삭제 실패: ${error.message}`);
+    },
+
+    async insertVoiceProfile(row) {
+      const { data, error } = await admin
+        .from("voice_profiles")
+        .insert({
+          subject_id: row.subjectId,
+          source: row.source,
+          ref_audio_path: row.refAudioPath,
+          provider_voice_id: row.providerVoiceId,
+          consent_id: row.consentId,
+        })
+        .select("id")
+        .single();
+      if (error) throw new Error(`voice_profiles 저장 실패: ${error.message}`);
+      return { id: data.id };
+    },
+
+    async clearRefAudioPath(voiceProfileId) {
+      const { error } = await admin
+        .from("voice_profiles")
+        .update({ ref_audio_path: null })
+        .eq("id", voiceProfileId);
+      if (error) throw new Error(`참조 음성 경로 정리 실패: ${error.message}`);
+    },
+
+    async signedAudioUrl(path, expiresInSec) {
+      const { data, error } = await admin.storage.from(AUDIO_BUCKET).createSignedUrl(path, expiresInSec);
+      if (error) throw new Error(`오디오 서명 URL 발급 실패: ${error.message}`);
+      return data.signedUrl;
     },
   };
 }
