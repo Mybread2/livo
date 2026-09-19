@@ -130,6 +130,19 @@ export default async function HomePage() {
             <div style={{ fontWeight: 600, fontSize: 15 }}>{s.displayName} 님</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Link
+                href={`/onboarding?subject=${s.id}`}
+                style={{
+                  fontSize: 13,
+                  color: "#fff",
+                  background: "#2A52BE",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  textDecoration: "none",
+                }}
+              >
+                온보딩
+              </Link>
+              <Link
                 href={`/voice?subject=${s.id}`}
                 style={{
                   fontSize: 13,
