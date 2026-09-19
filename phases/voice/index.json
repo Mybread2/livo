@@ -23,7 +23,8 @@
       "name": "voice-schema",
       "status": "completed",
       "started_at": "2026-09-19T15:36:09+0900",
-      "summary": "supabase/migrations/20260919000000_voice_schema.sql(accounts·subjects·consents·voice_profiles·phrase_audio, 전부 RLS · owns_subject() security definer · voice_profiles.consent_id NOT NULL + (consent_id, subject_id) 복합 FK · source는 family/self만 — 프리셋은 DB 행 없이 phrase-audio/presets/{preset_key}/{phrase_id}.mp3 · voice_profiles/phrase_audio는 select만, 쓰기는 service_role · private bucket voice-refs/phrase-audio, objects 정책 없음), supabase/tests/pglite.ts(createTestDb: Supabase role·auth·storage 스텁 + 기본 grant 후 마이그레이션 이름순 적용, asUser) + voice-schema.test.ts 11개, devDep @electric-sql/pglite"
+      "summary": "supabase/migrations/20260919000000_voice_schema.sql(accounts·subjects·consents·voice_profiles·phrase_audio, 전부 RLS · owns_subject() security definer · voice_profiles.consent_id NOT NULL + (consent_id, subject_id) 복합 FK · source는 family/self만 — 프리셋은 DB 행 없이 phrase-audio/presets/{preset_key}/{phrase_id}.mp3 · voice_profiles/phrase_audio는 select만, 쓰기는 service_role · private bucket voice-refs/phrase-audio, objects 정책 없음), supabase/tests/pglite.ts(createTestDb: Supabase role·auth·storage 스텁 + 기본 grant 후 마이그레이션 이름순 적용, asUser) + voice-schema.test.ts 11개, devDep @electric-sql/pglite",
+      "completed_at": "2026-09-19T15:40:08+0900"
     },
     {
       "step": 3,
