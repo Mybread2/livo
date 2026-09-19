@@ -65,6 +65,23 @@
       "started_at": "2026-09-19T19:25:37+0900",
       "summary": "src/recognition/pipeline.ts(RecognitionPipeline: push(landmarks|null, width, height, t) = null이면 C2 reset 후 null / extractLipFrame → SegmentDetector.push → normalizeSegment → nearestPhrases(dtw 옵션) → scoreNearest(score 옵션) → decideGate(manualSession) → {phraseId, text, score, gate}(discard 포함), 각 단계 null이면 null · label이 등록 문장이 아니면(getPhrase undefined) null · reset은 C2 reset) + analysis.ts(segmentsFromFrames[C2→C3, 정규화 불가 구간 제외] · buildTemplateSet[Map으로 묶어 문장은 처음 나온 순서·템플릿은 입력 순서] · leaveOneOut[나머지로 템플릿 → nearestPhrases + scoreNearest 기본값, 남은 템플릿 없으면 predicted null·d1/d2 Infinity·rejected]) + 합성 478점 얼굴(타원 입 3단어: 크게 한 번·옆으로 늘리며 두 번·오므리며 늦게) 테스트 33개(pipeline 24: 3단어×3변형[480ms·15fps·1280×720 / 720ms·24fps / 540ms·30fps·세로 720×1280] 모두 정답 speak·똑같은 움직임 score 1·정지 500ms 차는 프레임에서 1회·쉼만 없음·segment/dtw/score 옵션 전달·manualSession 0.85 show/speak·먼 움직임 rejectDistance 0.1로 discard·null 프레임/reset 구간 버림 후 다음 단어 인식·입술 못 뽑는 프레임 건너뜀·빈 템플릿·zzz만·zzz가 1위 / analysis 9: 2구간·C2 옵션·묶음 순서·LOO 3×3 전부 정답[실측 d1 ≤ 0.074, d2 ≥ 0.133]·표본 1개·빈 입력). 앞 step 파일·계약·phrases 무변경",
       "completed_at": "2026-09-19T19:36:05+0900"
+    },
+    {
+      "step": 8,
+      "name": "dev-collector",
+      "status": "completed",
+      "started_at": "2026-09-19T19:38:34+0900",
+      "summary": "src/app/(dev)/layout.tsx(NODE_ENV production이면 notFound — next start 실측 /dev/lips 404·다른 화면 200) + dev/lips/extractFrames.ts(DEFAULT_FPS 30 · scanVideo[파일 object URL → 문서에 붙이지 않은 <video> muted·playsInline → loadeddata 뒤 i/fps초(floor(길이×fps+1e-6)개, 모두 < 길이)로 seek·seeked 대기 → detect(performance.now() 기반, 같은 값이면 +1ms — 파일이 바뀌어도 엄격 증가) → onFrame({landmarks|null, t=영상 ms, width, height}) · 진행률 · finally src 제거+object URL 해제 / 거절: fps 비양수·비유한은 파일 열기 전 RangeError · load error · 길이 비유한/0 · 가로세로 0] + extractFrames[scanVideo 위에서 얼굴 있는 프레임만 faceFrames 세고 extractLipFrame → frames]) + dev/lips/page.tsx('use client': 반출 없음 안내·파일 이름 규칙 · model-status[createLipLandmarker, StrictMode 이중 effect면 늦게 온 모델 close] · 다중 영상 순서 처리[마지막 점 앞 소문자가 STARTER id가 아니면 건너뜀, 실패는 행에 표시] → 결과 표 clip-<id>·segments-<id> · segmentsFromFrames 구간 → leaveOneOut 표(표본·정답·예측·d1·d2·d1/d2·score·decideGate) + loo-summary(맞음/전체·잘못 나간 표시·발화) · 기기 저장/JSON 내려받기(templates-YYYY-MM-DD.json)/보기/지우기 → store-status · 인식 시험[저장본 없으면 안내, scanVideo 프레임(얼굴 없음 null 포함)을 RecognitionPipeline.push → trial-events]) + extractFrames 테스트 16개(가짜 video·landmarker: 탐색 시각·t·좌표·기본 fps 1.1초→33프레임·얼굴 없는 프레임 제외·타임스탬프 엄격 증가·object URL 해제·진행률·거절 4종·scanVideo null 전달). 명세 외(검수 필요): ① scanVideo 추가 export — RecognitionPipeline.push는 LipFrame이 아니라 얼굴 점을 받으므로 인식 시험이 수집과 같은 탐색 루프를 쓰게 했다 ② CLAUDE.md TDD에 따라 extractFrames.test.ts 추가 ③ fps·길이·영상 트랙 방어 오류. headless Chrome에서 모델 로드('모델 준비됨')까지 확인, 실제 얼굴 영상 처리·IndexedDB 저장은 미검증"
+    },
+    {
+      "step": 9,
+      "name": "lip-recognizer",
+      "status": "pending"
+    },
+    {
+      "step": 10,
+      "name": "subject-wiring",
+      "status": "pending"
     }
   ],
   "created_at": "2026-09-19T17:33:22+0900",
