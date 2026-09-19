@@ -12,7 +12,7 @@ export const PRESET_VOICE_IDS: Record<VoicePresetKey, string | null> = {
   "male-70s": "eihUtSAV68b73AgYGjGn",
   "female-30s": "SwKzuouP1DzLtddQPYAs",
   "female-50s": "LrQNdzc28JKUeqjQOFvI",
-  "female-70s": null,
+  "female-70s": "51SDi1wMc3KGuiAJGPZD",
 };
 
 export function getPresetVoiceId(key: VoicePresetKey): string | null {
