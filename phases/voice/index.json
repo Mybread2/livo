@@ -55,7 +55,8 @@
       "name": "bundle",
       "status": "completed",
       "started_at": "2026-09-19T15:49:56+0900",
-      "summary": "src/types/voice-bundle.ts(VoiceBundle{version: voice_profile_id | 'preset:default', source: preset/self/family, items: {phraseId, url}[] PHRASES 순서, expiresAt} — voice_id·참조 경로 없음) · VoiceStore.listVoiceProfiles(subjectId) → {id, source, createdAt}[] created_at desc(Supabase + 메모리) · memory-voice-store에 profiles.createdAt·seedVoiceProfile(subjectId, source, {createdAt?})(음성 동의 함께 시드) · src/services/bundle.ts(server-only · getBundle({store, now?}, {userId, subjectId, expiresInSec=3600}) — ownsSubject 아니면 ForbiddenError(서명 전) → 최신순으로 PHRASES 전부 phrase_audio 있는 첫 프로필(부분 완료 건너뜀, 경로는 phrase_audio.audio_path) · 없으면 presets/default 프리셋 → 문장별 signedAudioUrl, expiresAt = now + expiresInSec(서명 전 측정)) + bundle.test.ts 7개, voice-profile.test.ts toEqual에 createdAt 반영"
+      "summary": "src/types/voice-bundle.ts(VoiceBundle{version: voice_profile_id | 'preset:default', source: preset/self/family, items: {phraseId, url}[] PHRASES 순서, expiresAt} — voice_id·참조 경로 없음) · VoiceStore.listVoiceProfiles(subjectId) → {id, source, createdAt}[] created_at desc(Supabase + 메모리) · memory-voice-store에 profiles.createdAt·seedVoiceProfile(subjectId, source, {createdAt?})(음성 동의 함께 시드) · src/services/bundle.ts(server-only · getBundle({store, now?}, {userId, subjectId, expiresInSec=3600}) — ownsSubject 아니면 ForbiddenError(서명 전) → 최신순으로 PHRASES 전부 phrase_audio 있는 첫 프로필(부분 완료 건너뜀, 경로는 phrase_audio.audio_path) · 없으면 presets/default 프리셋 → 문장별 signedAudioUrl, expiresAt = now + expiresInSec(서명 전 측정)) + bundle.test.ts 7개, voice-profile.test.ts toEqual에 createdAt 반영",
+      "completed_at": "2026-09-19T15:53:14+0900"
     },
     {
       "step": 7,
