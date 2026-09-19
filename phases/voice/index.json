@@ -109,7 +109,9 @@
     {
       "step": 13,
       "name": "api-foundation",
-      "status": "pending"
+      "status": "completed",
+      "summary": "src/services/supabase-admin.ts(server-only · createSupabaseAdmin — NEXT_PUBLIC_SUPABASE_URL+SUPABASE_SERVICE_ROLE_KEY, persistSession·autoRefreshToken false, 없으면 throw) · src/services/api.ts(server-only · VoiceApiContext{userId, store, tts} · BadRequestError · parseUuid(형식 아니면 400, 대문자는 소문자로 — Storage 경로 대소문자 불일치로 파기 누락 방지) · parseSource(self/family만) · readJsonObject(JSON 객체만) · errorResponse — Bad 400 bad_request / Forbidden 403 / ConsentRequired 409 {missing} / PrecomputeIncomplete 502 {profile_id} / ElevenLabs 502 upstream / 그 외 500 internal, 본문에 메시지 없음, 5xx만 console.error · getVoiceApiContext — 서버 클라이언트 null → 503 not_configured, getUser()에 사용자 없으면 401(서버 키 없이 판정), 있으면 {userId, createSupabaseVoiceStore(createSupabaseAdmin()), createElevenLabs()}, 서버 키 누락은 throw 대신 503 not_configured(라우트가 try 밖에서 부르므로)) + api.test.ts 43개(vi.mock 서버 클라이언트, env stub, fetch stub으로 네트워크 0회 확인)",
+      "started_at": "2026-09-19T16:52:15+0900"
     },
     {
       "step": 14,
