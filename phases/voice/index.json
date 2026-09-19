@@ -7,7 +7,8 @@
       "name": "voice-tooling",
       "status": "completed",
       "started_at": "2026-09-19T15:33:07+0900",
-      "summary": "Next.js 없는 최소 TS 툴체인 — package.json(lint=eslint ., build=tsc --noEmit, test=vitest run --passWithNoTests), create-next-app형 tsconfig(@/* → src), vitest.config.ts(@ alias, node env), eslint.config.mjs(flat, js+tseslint recommended), .env.example, .gitignore에 .env*/!.env.example"
+      "summary": "Next.js 없는 최소 TS 툴체인 — package.json(lint=eslint ., build=tsc --noEmit, test=vitest run --passWithNoTests), create-next-app형 tsconfig(@/* → src), vitest.config.ts(@ alias, node env), eslint.config.mjs(flat, js+tseslint recommended), .env.example, .gitignore에 .env*/!.env.example",
+      "completed_at": "2026-09-19T15:35:04+0900"
     },
     {
       "step": 1,
