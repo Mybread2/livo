@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+  <rect width="390" height="844" fill="#ffffff"/>
+  <text x="20" y="76" font-family="sans-serif" font-size="13" fill="#6d707a">← 홈</text>
+  <text x="20" y="110" font-family="sans-serif" font-size="20" font-weight="700" fill="#15161a">목소리 고르기</text>
+  <text x="20" y="132" font-family="sans-serif" font-size="13" fill="#5c5f67">듣고 고릅니다. 나중에 바꿀 수 있습니다.</text>
+
+  <!-- preset list -->
+  <rect x="16" y="148" width="358" height="52" rx="10" fill="rgba(42,82,190,0.06)" stroke="rgba(42,82,190,0.45)" stroke-width="1"/>
+  <circle cx="38" cy="174" r="9" fill="none" stroke="#2A52BE" stroke-width="1.5"/>
+  <circle cx="38" cy="174" r="4.5" fill="#2A52BE"/>
+  <text x="56" y="179" font-family="sans-serif" font-size="14" font-weight="600" fill="#15161a">남성 30대</text>
+  <rect x="318" y="161" width="40" height="26" rx="6" fill="rgba(42,82,190,0.06)" stroke="rgba(42,82,190,0.35)" stroke-width="1"/>
+  <text x="338" y="179" font-family="sans-serif" font-size="12" fill="#2A52BE" text-anchor="middle">듣기</text>
+
+  <rect x="16" y="208" width="358" height="52" rx="10" fill="#fff" stroke="rgba(21,22,26,0.13)" stroke-width="1"/>
+  <circle cx="38" cy="234" r="9" fill="none" stroke="rgba(21,22,26,0.28)" stroke-width="1"/>
+  <text x="56" y="239" font-family="sans-serif" font-size="14" font-weight="600" fill="#15161a">여성 30대</text>
+  <rect x="318" y="221" width="40" height="26" rx="6" fill="rgba(42,82,190,0.06)" stroke="rgba(42,82,190,0.35)" stroke-width="1"/>
+  <text x="338" y="239" font-family="sans-serif" font-size="12" fill="#2A52BE" text-anchor="middle">듣기</text>
+
+  <rect x="16" y="268" width="358" height="52" rx="10" fill="#fff" stroke="rgba(21,22,26,0.13)" stroke-width="1"/>
+  <circle cx="38" cy="294" r="9" fill="none" stroke="rgba(21,22,26,0.28)" stroke-width="1"/>
+  <text x="56" y="299" font-family="sans-serif" font-size="14" font-weight="600" fill="#15161a">남성 40대</text>
+  <rect x="318" y="281" width="40" height="26" rx="6" fill="rgba(42,82,190,0.06)" stroke="rgba(42,82,190,0.35)" stroke-width="1"/>
+  <text x="338" y="299" font-family="sans-serif" font-size="12" fill="#2A52BE" text-anchor="middle">듣기</text>
+
+  <rect x="16" y="328" width="358" height="52" rx="10" fill="#fff" stroke="rgba(21,22,26,0.13)" stroke-width="1"/>
+  <circle cx="38" cy="354" r="9" fill="none" stroke="rgba(21,22,26,0.28)" stroke-width="1"/>
+  <text x="56" y="359" font-family="sans-serif" font-size="14" font-weight="600" fill="#15161a">여성 40대</text>
+  <rect x="318" y="341" width="40" height="26" rx="6" fill="rgba(42,82,190,0.06)" stroke="rgba(42,82,190,0.35)" stroke-width="1"/>
+  <text x="338" y="359" font-family="sans-serif" font-size="12" fill="#2A52BE" text-anchor="middle">듣기</text>
+
+  <rect x="16" y="388" width="358" height="52" rx="10" fill="#fff" stroke="rgba(21,22,26,0.13)" stroke-width="1"/>
+  <circle cx="38" cy="414" r="9" fill="none" stroke="rgba(21,22,26,0.28)" stroke-width="1"/>
+  <text x="56" y="419" font-family="sans-serif" font-size="14" font-weight="600" fill="#15161a">남성 50대</text>
+  <rect x="318" y="401" width="40" height="26" rx="6" fill="rgba(42,82,190,0.06)" stroke="rgba(42,82,190,0.35)" stroke-width="1"/>
+  <text x="338" y="419" font-family="sans-serif" font-size="12" fill="#2A52BE" text-anchor="middle">듣기</text>
+
+  <rect x="16" y="448" width="358" height="52" rx="10" fill="#fff" stroke="rgba(21,22,26,0.13)" stroke-width="1"/>
+  <circle cx="38" cy="474" r="9" fill="none" stroke="rgba(21,22,26,0.28)" stroke-width="1"/>
+  <text x="56" y="479" font-family="sans-serif" font-size="14" font-weight="600" fill="#15161a">여성 50대</text>
+  <rect x="318" y="461" width="40" height="26" rx="6" fill="rgba(42,82,190,0.06)" stroke="rgba(42,82,190,0.35)" stroke-width="1"/>
+  <text x="338" y="479" font-family="sans-serif" font-size="12" fill="#2A52BE" text-anchor="middle">듣기</text>
+
+  <!-- 선택 완료 버튼 -->
+  <rect x="16" y="516" width="358" height="52" rx="10" fill="#2A52BE"/>
+  <text x="195" y="547" font-family="sans-serif" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">선택 완료</text>
+
+  <text x="195" y="590" font-family="sans-serif" font-size="11.5" fill="#9a9ca3" text-anchor="middle">Voice by ElevenLabs</text>
+
+  <text x="195" y="44" font-family="sans-serif" font-size="11" fill="#ccc" text-anchor="middle">→ 실제 캡처로 교체: /voice?subject=...</text>
+</svg>

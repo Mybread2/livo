@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+  <rect width="390" height="844" fill="#ffffff"/>
+  <!-- status bar -->
+  <rect width="390" height="44" fill="#f8f9fa"/>
+
+  <!-- center content -->
+  <text x="195" y="360" font-family="sans-serif" font-size="28" font-weight="800" fill="#2A52BE" text-anchor="middle">입모아</text>
+  <text x="195" y="390" font-family="sans-serif" font-size="14" fill="#6d707a" text-anchor="middle">보호자 계정으로 시작합니다</text>
+
+  <!-- Google 버튼 -->
+  <rect x="24" y="680" width="342" height="52" rx="10" fill="#2A52BE"/>
+  <text x="195" y="712" font-family="sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">Google로 계속하기</text>
+
+  <!-- 데모 버튼 -->
+  <rect x="24" y="744" width="342" height="50" rx="10" fill="rgba(42,82,190,0.06)" stroke="#2A52BE" stroke-width="1" stroke-opacity="0.35"/>
+  <text x="195" y="774" font-family="sans-serif" font-size="15" font-weight="700" fill="#2A52BE" text-anchor="middle">로그인 없이 데모 체험</text>
+
+  <text x="195" y="818" font-family="sans-serif" font-size="12" fill="#9a9ca3" text-anchor="middle">병상 태블릿은 한 번 로그인하면 유지됩니다.</text>
+
+  <!-- placeholder label -->
+  <text x="195" y="44" font-family="sans-serif" font-size="11" fill="#ccc" text-anchor="middle">→ 실제 캡처로 교체: /login</text>
+</svg>

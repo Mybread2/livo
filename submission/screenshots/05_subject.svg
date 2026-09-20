@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+  <rect width="390" height="844" fill="#0a0a0c"/>
+
+  <!-- 카메라 피드 (상단 소형) -->
+  <rect x="0" y="0" width="390" height="260" fill="#141416"/>
+  <ellipse cx="195" cy="130" rx="70" ry="90" fill="none" stroke="rgba(42,82,190,0.5)" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <!-- 입술 포인트 -->
+  <ellipse cx="195" cy="175" rx="24" ry="10" fill="none" stroke="#2A52BE" stroke-width="1.5"/>
+  <circle cx="171" cy="175" r="2.5" fill="#2A52BE"/>
+  <circle cx="183" cy="170" r="2.5" fill="#2A52BE"/>
+  <circle cx="195" cy="168" r="2.5" fill="#2A52BE"/>
+  <circle cx="207" cy="170" r="2.5" fill="#2A52BE"/>
+  <circle cx="219" cy="175" r="2.5" fill="#2A52BE"/>
+  <circle cx="195" cy="183" r="2.5" fill="#2A52BE"/>
+
+  <!-- 인식 결과 영역 -->
+  <rect x="0" y="268" width="390" height="200" rx="0" fill="#111113"/>
+  <text x="195" y="310" font-family="sans-serif" font-size="12" fill="#6d707a" text-anchor="middle">인식됨</text>
+  <text x="195" y="360" font-family="sans-serif" font-size="32" font-weight="800" fill="#ffffff" text-anchor="middle">물 주세요</text>
+
+  <!-- 스피커 아이콘 / 재생 중 표시 -->
+  <rect x="155" y="380" width="80" height="32" rx="16" fill="#2A52BE"/>
+  <text x="195" y="401" font-family="sans-serif" font-size="12" fill="#ffffff" text-anchor="middle">▶ 재생 중</text>
+
+  <!-- 응급 문장 그리드 -->
+  <text x="20" y="496" font-family="sans-serif" font-size="11" fill="#6d707a">응급 문장 (항상 동작)</text>
+
+  <rect x="16" y="508" width="170" height="60" rx="10" fill="rgba(42,82,190,0.15)" stroke="rgba(42,82,190,0.4)" stroke-width="1"/>
+  <text x="101" y="543" font-family="sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">살려주세요</text>
+
+  <rect x="204" y="508" width="170" height="60" rx="10" fill="rgba(42,82,190,0.15)" stroke="rgba(42,82,190,0.4)" stroke-width="1"/>
+  <text x="289" y="543" font-family="sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">아파요</text>
+
+  <rect x="16" y="576" width="170" height="60" rx="10" fill="rgba(21,22,26,0.6)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="101" y="611" font-family="sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">물 주세요</text>
+
+  <rect x="204" y="576" width="170" height="60" rx="10" fill="rgba(21,22,26,0.6)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="289" y="611" font-family="sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">화장실</text>
+
+  <!-- mediapipe badge -->
+  <text x="195" y="680" font-family="sans-serif" font-size="11" fill="#444" text-anchor="middle">MediaPipe · 브라우저 내 추론 · 네트워크 없음</text>
+
+  <text x="195" y="820" font-family="sans-serif" font-size="11" fill="#444" text-anchor="middle">→ 실제 캡처로 교체: /subject?subject=...&amp;recognizer=mock</text>
+</svg>
