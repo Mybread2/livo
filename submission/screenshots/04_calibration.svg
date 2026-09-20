@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0d0d10"/>
-      <stop offset="100%" stop-color="#12131a"/>
+      <stop offset="0%" stop-color="#eef1fb"/>
+      <stop offset="100%" stop-color="#dce3f8"/>
     </linearGradient>
     <filter id="shadow">
-      <feDropShadow dx="0" dy="8" stdDeviation="24" flood-color="#2A52BE" flood-opacity="0.3"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="24" flood-color="#2A52BE" flood-opacity="0.18"/>
     </filter>
     <filter id="glow">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feGaussianBlur stdDeviation="4" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
@@ -16,19 +16,19 @@
 
   <!-- left copy -->
   <text x="140" y="270" font-family="sans-serif" font-size="32" font-weight="800" fill="#2A52BE">캘리브레이션</text>
-  <text x="140" y="316" font-family="sans-serif" font-size="16" fill="#e0e0e0">입모양을 따라 하면</text>
-  <text x="140" y="341" font-family="sans-serif" font-size="16" fill="#e0e0e0">개인 템플릿이 기기에 저장됩니다</text>
+  <text x="140" y="316" font-family="sans-serif" font-size="16" fill="#3f434c">입모양을 따라 하면</text>
+  <text x="140" y="341" font-family="sans-serif" font-size="16" fill="#3f434c">개인 템플릿이 기기에 저장됩니다</text>
   <text x="140" y="390" font-family="sans-serif" font-size="13" fill="#6d707a">· 손을 전혀 쓰지 않아도 됩니다</text>
   <text x="140" y="413" font-family="sans-serif" font-size="13" fill="#6d707a">· 인식 즉시 자동으로 다음 문장</text>
   <text x="140" y="436" font-family="sans-serif" font-size="13" fill="#6d707a">· MediaPipe — 브라우저 내 추론</text>
   <text x="140" y="459" font-family="sans-serif" font-size="13" fill="#6d707a">· 영상은 외부로 전송되지 않음</text>
 
   <!-- phone frame -->
-  <rect x="760" y="40" width="320" height="640" rx="36" fill="#111114" filter="url(#shadow)"/>
+  <rect x="760" y="40" width="320" height="640" rx="36" fill="#1a1a1e" filter="url(#shadow)"/>
   <rect x="768" y="48" width="304" height="624" rx="28" fill="#0d0d10"/>
-  <rect x="876" y="52" width="88" height="20" rx="10" fill="#111114"/>
+  <rect x="876" y="52" width="88" height="20" rx="10" fill="#1a1a1e"/>
 
-  <!-- camera feed area -->
+  <!-- camera feed area (dark inside phone is intentional — it's a camera) -->
   <rect x="768" y="48" width="304" height="360" rx="28" fill="#1a1a1e"/>
 
   <!-- face outline guide -->
@@ -48,7 +48,7 @@
   <text x="920" y="444" font-family="sans-serif" font-size="10" fill="#6d707a" text-anchor="middle">따라 하세요</text>
   <text x="920" y="470" font-family="sans-serif" font-size="20" font-weight="700" fill="#ffffff" text-anchor="middle">물 주세요</text>
 
-  <!-- progress -->
+  <!-- progress dots -->
   <circle cx="904" cy="506" r="5" fill="#2A52BE"/>
   <circle cx="918" cy="506" r="5" fill="rgba(42,82,190,0.3)"/>
   <circle cx="932" cy="506" r="5" fill="rgba(42,82,190,0.3)"/>
@@ -59,5 +59,5 @@
   <circle cx="920" cy="590" r="26" fill="#2A52BE"/>
   <circle cx="920" cy="590" r="13" fill="#ffffff"/>
 
-  <text x="920" y="636" font-family="sans-serif" font-size="10" fill="#555" text-anchor="middle">인식되면 자동으로 다음 문장으로 넘어갑니다</text>
+  <text x="920" y="636" font-family="sans-serif" font-size="10" fill="#6d707a" text-anchor="middle">인식되면 자동으로 다음 문장으로 넘어갑니다</text>
 </svg>

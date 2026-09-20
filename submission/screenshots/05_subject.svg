@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0d0d10"/>
-      <stop offset="100%" stop-color="#12131a"/>
+      <stop offset="0%" stop-color="#eef1fb"/>
+      <stop offset="100%" stop-color="#dce3f8"/>
     </linearGradient>
     <filter id="shadow">
-      <feDropShadow dx="0" dy="8" stdDeviation="24" flood-color="#2A52BE" flood-opacity="0.3"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="24" flood-color="#2A52BE" flood-opacity="0.18"/>
     </filter>
     <filter id="glow">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feGaussianBlur stdDeviation="4" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
@@ -16,19 +16,19 @@
 
   <!-- left copy -->
   <text x="140" y="260" font-family="sans-serif" font-size="32" font-weight="800" fill="#2A52BE">대상자 발화 화면</text>
-  <text x="140" y="306" font-family="sans-serif" font-size="16" fill="#e0e0e0">입모양을 인식하고</text>
-  <text x="140" y="331" font-family="sans-serif" font-size="16" fill="#e0e0e0">개인화된 목소리로 즉시 말합니다</text>
+  <text x="140" y="306" font-family="sans-serif" font-size="16" fill="#3f434c">입모양을 인식하고</text>
+  <text x="140" y="331" font-family="sans-serif" font-size="16" fill="#3f434c">개인화된 목소리로 즉시 말합니다</text>
   <text x="140" y="376" font-family="sans-serif" font-size="13" fill="#6d707a">· 네트워크 없이 동작</text>
   <text x="140" y="399" font-family="sans-serif" font-size="13" fill="#6d707a">· 응급 문장(T0) 항상 최우선 처리</text>
   <text x="140" y="422" font-family="sans-serif" font-size="13" fill="#6d707a">· 손 입력 전혀 필요 없음</text>
   <text x="140" y="445" font-family="sans-serif" font-size="13" fill="#6d707a">· MediaPipe + DTW 개인화 인식</text>
 
   <!-- phone frame -->
-  <rect x="760" y="40" width="320" height="640" rx="36" fill="#111114" filter="url(#shadow)"/>
+  <rect x="760" y="40" width="320" height="640" rx="36" fill="#1a1a1e" filter="url(#shadow)"/>
   <rect x="768" y="48" width="304" height="624" rx="28" fill="#0d0d10"/>
-  <rect x="876" y="52" width="88" height="20" rx="10" fill="#111114"/>
+  <rect x="876" y="52" width="88" height="20" rx="10" fill="#1a1a1e"/>
 
-  <!-- camera feed (small top area) -->
+  <!-- camera feed (dark inside phone — camera area) -->
   <rect x="768" y="48" width="304" height="200" rx="28" fill="#141416"/>
   <ellipse cx="920" cy="135" rx="55" ry="72" fill="none" stroke="rgba(42,82,190,0.45)" stroke-width="1.5" stroke-dasharray="6 3"/>
   <!-- lip points -->
@@ -41,7 +41,7 @@
   <circle cx="920" cy="180" r="2.5" fill="#2A52BE"/>
 
   <!-- recognized result -->
-  <rect x="768" y="255" width="304" height="100" rx="0" fill="#111113"/>
+  <rect x="768" y="255" width="304" height="100" fill="#111113"/>
   <text x="920" y="285" font-family="sans-serif" font-size="10" fill="#6d707a" text-anchor="middle">인식됨</text>
   <text x="920" y="326" font-family="sans-serif" font-size="26" font-weight="800" fill="#ffffff" text-anchor="middle">물 주세요</text>
 
@@ -49,7 +49,7 @@
   <rect x="876" y="334" width="88" height="26" rx="13" fill="#2A52BE"/>
   <text x="920" y="351" font-family="sans-serif" font-size="11" fill="#ffffff" text-anchor="middle">▶ 재생 중</text>
 
-  <!-- emergency phrases -->
+  <!-- emergency phrases label -->
   <text x="786" y="386" font-family="sans-serif" font-size="10" fill="#6d707a">응급 문장 (항상 동작)</text>
 
   <rect x="780" y="394" width="132" height="52" rx="10" fill="rgba(42,82,190,0.15)" stroke="rgba(42,82,190,0.45)" stroke-width="1"/>
@@ -64,5 +64,5 @@
   <rect x="920" y="452" width="132" height="52" rx="10" fill="rgba(21,22,26,0.7)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
   <text x="986" y="483" font-family="sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">화장실</text>
 
-  <text x="920" y="540" font-family="sans-serif" font-size="10" fill="#444" text-anchor="middle">MediaPipe · 온디바이스 추론 · 네트워크 없음</text>
+  <text x="920" y="540" font-family="sans-serif" font-size="10" fill="#6d707a" text-anchor="middle">MediaPipe · 온디바이스 추론 · 네트워크 없음</text>
 </svg>
