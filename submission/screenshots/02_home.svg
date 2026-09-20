@@ -1,32 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
-  <rect width="390" height="844" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eef1fb"/>
+      <stop offset="100%" stop-color="#dce3f8"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="24" flood-color="#2A52BE" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+
+  <!-- left copy -->
+  <text x="200" y="270" font-family="sans-serif" font-size="32" font-weight="800" fill="#2A52BE">보호자 홈</text>
+  <text x="200" y="315" font-family="sans-serif" font-size="16" fill="#3f434c">대상자를 등록하고</text>
+  <text x="200" y="340" font-family="sans-serif" font-size="16" fill="#3f434c">목소리·문장을 설정합니다</text>
+  <text x="200" y="390" font-family="sans-serif" font-size="13" fill="#6d707a">· 온보딩 → 캘리브레이션 안내</text>
+  <text x="200" y="415" font-family="sans-serif" font-size="13" fill="#6d707a">· 목소리 선택 (ElevenLabs 합성)</text>
+  <text x="200" y="440" font-family="sans-serif" font-size="13" fill="#6d707a">· 대상자 화면 바로가기</text>
+
+  <!-- phone frame -->
+  <rect x="760" y="40" width="320" height="640" rx="36" fill="#1a1a1e" filter="url(#shadow)"/>
+  <rect x="768" y="48" width="304" height="624" rx="28" fill="#ffffff"/>
+  <rect x="876" y="52" width="88" height="20" rx="10" fill="#1a1a1e"/>
 
   <!-- demo banner -->
-  <rect x="16" y="56" width="358" height="40" rx="10" fill="rgba(42,82,190,0.08)" stroke="#2A52BE" stroke-width="1" stroke-opacity="0.3"/>
-  <text x="30" y="81" font-family="sans-serif" font-size="12" font-weight="600" fill="#2A52BE">데모 모드 — 데이터는 저장되지 않습니다</text>
-  <text x="352" y="81" font-family="sans-serif" font-size="11" fill="#6d707a" text-anchor="end">데모 종료</text>
+  <rect x="780" y="76" width="280" height="34" rx="8" fill="rgba(42,82,190,0.08)" stroke="#2A52BE" stroke-width="1" stroke-opacity="0.3"/>
+  <text x="794" y="98" font-family="sans-serif" font-size="10" font-weight="600" fill="#2A52BE">데모 모드 — 데이터는 저장되지 않습니다</text>
 
   <!-- header -->
-  <text x="20" y="130" font-family="sans-serif" font-size="18" font-weight="800" fill="#2A52BE">입모아</text>
-  <text x="370" y="130" font-family="sans-serif" font-size="13" fill="#6d707a" text-anchor="end">설정</text>
-  <line x1="16" y1="140" x2="374" y2="140" stroke="rgba(21,22,26,0.13)" stroke-width="1"/>
+  <text x="786" y="136" font-family="sans-serif" font-size="15" font-weight="800" fill="#2A52BE">입모아</text>
+  <text x="1044" y="136" font-family="sans-serif" font-size="11" fill="#6d707a" text-anchor="end">설정</text>
+  <line x1="780" y1="144" x2="1060" y2="144" stroke="rgba(21,22,26,0.13)" stroke-width="1"/>
 
   <!-- subject card -->
-  <rect x="16" y="156" width="358" height="120" rx="10" fill="#fff" stroke="rgba(21,22,26,0.13)" stroke-width="1"/>
-  <text x="28" y="182" font-family="sans-serif" font-size="15" font-weight="600" fill="#15161a">데모 대상자 님</text>
+  <rect x="780" y="156" width="280" height="110" rx="10" fill="#fff" stroke="rgba(21,22,26,0.13)" stroke-width="1"/>
+  <text x="796" y="178" font-family="sans-serif" font-size="13" font-weight="600" fill="#15161a">데모 대상자 님</text>
 
-  <rect x="28" y="196" width="64" height="32" rx="8" fill="#2A52BE"/>
-  <text x="60" y="217" font-family="sans-serif" font-size="12" fill="#fff" text-anchor="middle">온보딩</text>
+  <rect x="796" y="188" width="52" height="28" rx="7" fill="#2A52BE"/>
+  <text x="822" y="207" font-family="sans-serif" font-size="11" fill="#fff" text-anchor="middle">온보딩</text>
 
-  <rect x="100" y="196" width="80" height="32" rx="8" fill="rgba(42,82,190,0.06)" stroke="rgba(42,82,190,0.4)" stroke-width="1"/>
-  <text x="140" y="217" font-family="sans-serif" font-size="12" fill="#2A52BE" text-anchor="middle">목소리 설정</text>
+  <rect x="854" y="188" width="66" height="28" rx="7" fill="rgba(42,82,190,0.06)" stroke="rgba(42,82,190,0.4)" stroke-width="1"/>
+  <text x="887" y="207" font-family="sans-serif" font-size="11" fill="#2A52BE" text-anchor="middle">목소리 설정</text>
 
-  <rect x="188" y="196" width="96" height="32" rx="8" fill="#0a0a0c"/>
-  <text x="236" y="217" font-family="sans-serif" font-size="12" fill="#fff" text-anchor="middle">대상자 화면 열기</text>
+  <rect x="926" y="188" width="76" height="28" rx="7" fill="#0a0a0c"/>
+  <text x="964" y="207" font-family="sans-serif" font-size="11" fill="#fff" text-anchor="middle">대상자 화면</text>
+
+  <!-- add subject -->
+  <rect x="780" y="276" width="200" height="36" rx="8" fill="#fff" stroke="rgba(21,22,26,0.2)" stroke-width="1"/>
+  <text x="880" y="299" font-family="sans-serif" font-size="12" fill="#9a9ca3" text-anchor="middle">대상자 이름 (예: 김O수)</text>
+  <rect x="986" y="276" width="74" height="36" rx="8" fill="#fff" stroke="rgba(21,22,26,0.2)" stroke-width="1"/>
+  <text x="1023" y="299" font-family="sans-serif" font-size="13" font-weight="700" fill="#15161a" text-anchor="middle">＋ 추가</text>
 
   <!-- phrases btn -->
-  <rect x="16" y="290" width="358" height="50" rx="10" fill="#2A52BE"/>
-  <text x="195" y="321" font-family="sans-serif" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">문장 관리</text>
-
-  <text x="195" y="44" font-family="sans-serif" font-size="11" fill="#ccc" text-anchor="middle">→ 실제 캡처로 교체: /home (데모 모드)</text>
+  <rect x="780" y="324" width="280" height="44" rx="10" fill="#2A52BE"/>
+  <text x="920" y="351" font-family="sans-serif" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">문장 관리</text>
 </svg>
