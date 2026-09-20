@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAccountStore } from "@/services/account-store";
 import { ensureAccount, addSubject } from "@/services/account";
+import { isDemoMode } from "@/lib/demo-server";
+import { DEMO_SUBJECT_ID, DEMO_SUBJECT_NAME } from "@/lib/demo";
 
 // 보호자 홈 대시보드(와이어프레임 s16 · s18). 실제 대상자 목록 + 추가.
 // 발화 로그는 횟수·시각만 — 좌표·오디오는 저장하지 않는다.
@@ -34,12 +36,16 @@ async function addSubjectAction(formData: FormData) {
 }
 
 export default async function HomePage() {
-  const supabase = getSupabaseServerClient();
+  const demo = isDemoMode();
+  const supabase = demo ? null : getSupabaseServerClient();
 
   // Supabase 미연결이면(로컬 초기) 가드를 건너뛰고 빈 상태만 보여준다.
   let email: string | null = null;
   let subjects: { id: string; displayName: string }[] = [];
-  if (supabase) {
+
+  if (demo) {
+    subjects = [{ id: DEMO_SUBJECT_ID, displayName: DEMO_SUBJECT_NAME }];
+  } else if (supabase) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -55,6 +61,30 @@ export default async function HomePage() {
 
   return (
     <main style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+      {demo && (
+        <div
+          style={{
+            background: "rgba(42,82,190,0.08)",
+            border: "1px solid rgba(42,82,190,0.3)",
+            borderRadius: 10,
+            padding: "10px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+          }}
+        >
+          <span style={{ flex: 1, color: "#2A52BE", fontWeight: 600 }}>
+            데모 모드 — 데이터는 저장되지 않습니다
+          </span>
+          <a
+            href="/api/demo/end"
+            style={{ color: "#6d707a", textDecoration: "none", fontSize: 12.5 }}
+          >
+            데모 종료
+          </a>
+        </div>
+      )}
       <header
         style={{
           display: "flex",

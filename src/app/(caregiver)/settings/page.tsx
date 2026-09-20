@@ -5,6 +5,8 @@ import {
   RevokeButton,
   DeleteSubjectButton,
 } from "@/components/caregiver/SettingsActions";
+import { isDemoMode } from "@/lib/demo-server";
+import { DEMO_SUBJECT_NAME } from "@/lib/demo";
 
 // 설정(와이어프레임 s31·s32). 대상자별: 동의 관리(철회) + 대상자 삭제.
 // 철회·삭제는 서버 API로만 한다(목소리 파기 동반, C 담당). DB 직접 불가.
@@ -24,7 +26,7 @@ export default async function SettingsPage({
   searchParams: { subject?: string };
 }) {
   const subjectId = searchParams.subject;
-  const supabase = getSupabaseServerClient();
+  const supabase = isDemoMode() ? null : getSupabaseServerClient();
 
   if (!subjectId) {
     return (
@@ -38,6 +40,7 @@ export default async function SettingsPage({
     );
   }
 
+  const demo = isDemoMode();
   let subjectName = "대상자";
   let consents: {
     id: string;
@@ -46,7 +49,13 @@ export default async function SettingsPage({
     revoked_at: string | null;
   }[] = [];
 
-  if (supabase) {
+  if (demo) {
+    subjectName = DEMO_SUBJECT_NAME;
+    consents = [
+      { id: "demo-consent-1", kind: "biometric", granted_at: new Date().toISOString(), revoked_at: null },
+      { id: "demo-consent-2", kind: "voice_self", granted_at: new Date().toISOString(), revoked_at: null },
+    ];
+  } else if (supabase) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -104,7 +113,7 @@ export default async function SettingsPage({
                     : `동의 · ${new Date(c.granted_at).toLocaleDateString("ko-KR")}`}
                 </div>
               </div>
-              {!revoked && <RevokeButton consentId={c.id} />}
+              {!revoked && !demo && <RevokeButton consentId={c.id} />}
             </div>
           );
         })
@@ -123,10 +132,14 @@ export default async function SettingsPage({
         철회하면 원본과 추출 좌표·영상은 파기됩니다. 이미 학습이 끝난 모델은 제외되며, 이후 학습에는 쓰지 않습니다. 응급 문장 발화는 철회 후에도 동작합니다.
       </div>
 
-      <h2 style={{ font: "700 15px/1.2 Pretendard", margin: "12px 0 0", color: "#7a2020" }}>
-        대상자 삭제
-      </h2>
-      <DeleteSubjectButton subjectId={subjectId} />
+      {!demo && (
+        <>
+          <h2 style={{ font: "700 15px/1.2 Pretendard", margin: "12px 0 0", color: "#7a2020" }}>
+            대상자 삭제
+          </h2>
+          <DeleteSubjectButton subjectId={subjectId} />
+        </>
+      )}
     </main>
   );
 }

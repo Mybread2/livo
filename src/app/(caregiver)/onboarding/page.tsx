@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { ConsentKind } from "@/services/consent-store";
 import { submitConsents } from "./actions";
+import { isDemoModeClient } from "@/lib/demo";
 
 // 온보딩(와이어프레임 s05~s15). 보호자가 대상자별로 1회 진행.
 // 순서: 시작 → 동의 → 카메라 거치 → 목소리 → 캘리브레이션 안내 → 완료.
@@ -133,6 +134,10 @@ function ConsentStep({ subjectId, onNext }: { subjectId: string; onNext: () => v
   const requiredOk = CONSENT_ITEMS.filter((i) => i.required).every((i) => checked[i.kind]);
 
   const submit = async () => {
+    if (isDemoModeClient()) {
+      onNext();
+      return;
+    }
     setSaving(true);
     setMsg(null);
     const granted = CONSENT_ITEMS.filter((i) => checked[i.kind]).map((i) => i.kind);

@@ -1,10 +1,15 @@
 import { errorResponse, getVoiceApiContext, readJsonObject } from "@/services/api";
 import { handleSelectPreset } from "@/services/voice-preset-api";
+import { isDemoMode } from "@/lib/demo-server";
 
 export const runtime = "nodejs";
 
 // PUT /api/subjects/:subject_id/voice-preset — 대상자의 프리셋 목소리를 고른다. 권한·키 검사는 서버 함수가 한다.
 export async function PUT(req: Request, { params }: { params: { subject_id: string } }) {
+  if (isDemoMode()) {
+    const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+    return Response.json({ preset_key: body.preset_key ?? "" });
+  }
   const ctx = await getVoiceApiContext();
   if (ctx instanceof Response) return ctx;
   try {

@@ -68,6 +68,23 @@ export default function LoginPage() {
       >
         Google로 계속하기
       </button>
+      <a
+        href="/api/demo/start"
+        style={{
+          display: "block",
+          textAlign: "center",
+          padding: 14,
+          borderRadius: 10,
+          border: "1px solid rgba(42,82,190,0.35)",
+          background: "rgba(42,82,190,0.06)",
+          color: "#2A52BE",
+          fontSize: 15,
+          fontWeight: 700,
+          textDecoration: "none",
+        }}
+      >
+        로그인 없이 데모 체험
+      </a>
       {msg && (
         <div
           style={{
